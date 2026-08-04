@@ -213,10 +213,10 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
     <!-- 自选观察 -->
     <article class="panel full">
       <div class="panel-head">
-        <div><h2>自选观察 · AI/云计算/数据中心/芯片</h2><p class="sub">自选关注池 · 不参与评分 · 按涨跌幅排序 · 30日ρ为与本票的滚动相关性</p></div>
+        <div><h2>自选观察 · AI/云计算/数据中心/芯片</h2><p class="sub">与本票同口径实时评分：L1/L2共享市场层，L3按30日实际联动自动匹配篮子，L4逐票计算，基准按所属板块适配 · 按涨跌幅排序 · 30日ρ为与本票相关性</p></div>
       </div>
       <table>
-        <thead><tr><th>标的</th><th>题材</th><th class="r">现价</th><th class="r">涨跌幅</th><th class="r">换手</th><th class="r">30日ρ</th></tr></thead>
+        <thead><tr><th>标的</th><th>题材</th><th class="r">评分</th><th class="r">现价</th><th class="r">涨跌幅</th><th class="r">换手</th><th class="r">30日ρ</th></tr></thead>
         <tbody id="watchBody"></tbody>
       </table>
     </article>
@@ -248,7 +248,7 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
 
   <footer>
     综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v2.2
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v2.3
   </footer>
 </main>
 
@@ -298,6 +298,7 @@ const WATCHLIST = [
 const TARGET = "bj920021", BENCH = "bj899050";
 const INDEXES = [
   { sym: "sh000001", name: "上证指数",  tag: "A股" },
+  { sym: "sz399001", name: "深证成指",  tag: "A股" },
   { sym: "sz399006", name: "创业板指",  tag: "A股" },
   { sym: "sh000688", name: "科创50",    tag: "A股" },
   { sym: "sz399971", name: "中证传媒",  tag: "板块" },
@@ -475,6 +476,98 @@ function buildLevels(bars, q) {
 }
 
 /* ================= 因子模型 ================= */
+// 市场基准匹配：按票所属板块选对应指数
+const BENCH_NAME = { bj899050: "北证50", sh000688: "科创50", sz399006: "创业板指", sz399001: "深成指", sh000001: "上证" };
+function benchFor(sym) {
+  if (sym.startsWith("bj")) return "bj899050";
+  if (sym.startsWith("sh688")) return "sh000688";
+  if (sym.startsWith("sz3")) return "sz399006";
+  if (sym.startsWith("sz")) return "sz399001";
+  return "sh000001";
+}
+
+// L4 个股动能（目标票与自选票共用同一套口径）
+function l4Rows(sym, benchSym) {
+  const q = S.q[sym], bq = S.q[benchSym];
+  const bn = BENCH_NAME[benchSym] || "基准";
+  const rows = [];
+  if (!q) return rows;
+  const bars = liveBars(sym);
+  if (bars && bars.length >= 21) {
+    const closes = bars.map(b => b.close);
+    const m5 = ma(closes, 5), m10 = ma(closes, 10), m20 = ma(closes, 20);
+    const p = q.price;
+    const vsMA20 = (p / m20 - 1) * 100;
+    rows.push({ name: "价格vs MA20", read: signed(vsMA20, "%"), score: lin(vsMA20, -6, 6), w: 20 });
+    let maScore = 10, maRead = "空头排列";
+    if (p > m5 && m5 > m10 && m10 > m20) { maScore = 100; maRead = "多头排列"; }
+    else if (p > m5 && m5 > m10) { maScore = 75; maRead = "短多中平"; }
+    else if (p > m5) { maScore = 55; maRead = "价站短线"; }
+    else if (p > m20) { maScore = 40; maRead = "中线未破"; }
+    rows.push({ name: "均线结构", read: maRead, score: maScore, w: 20 });
+    if (bq) {
+      const rs = q.pct - bq.pct;
+      rows.push({ name: "vs" + bn + "(日内)", read: signed(rs, "pct"), score: lin(rs, -3, 3), w: 20 });
+    }
+    const prev20 = bars.slice(0, -1).slice(-20);
+    const h20 = Math.max(...prev20.map(b => b.high)), l20 = Math.min(...prev20.map(b => b.low));
+    if (h20 > l20) {
+      const pos20 = Math.max(0, Math.min(100, (p - l20) / (h20 - l20) * 100));
+      rows.push({ name: "20日区间位置", read: fmt(pos20, 0) + "%", score: pos20, w: 20 });
+    }
+    const vols = bars.slice(0, -1).slice(-5).map(b => b.vol);
+    const avg5 = vols.length ? vols.reduce((s, x) => s + x, 0) / vols.length : null;
+    const todayVol = bars[bars.length - 1].vol;
+    if (avg5 && todayVol) {
+      const vr = todayVol / avg5;
+      const vScore = q.pct >= 0 ? lin(vr, 0.6, 2.5) : 100 - lin(vr, 0.6, 2.5);
+      const vTag = vr > 1.2 ? (q.pct >= 0 ? " 放量涨" : " 放量跌") : "";
+      rows.push({ name: "量比(5日)", read: fmt(vr) + "x" + vTag, score: vScore, w: 20 });
+    }
+  } else if (bq) {
+    const rs = q.pct - bq.pct;
+    rows.push({ name: "vs" + bn + "(日内)", read: signed(rs, "pct"), score: lin(rs, -3, 3), w: 50 });
+    if (q.high > q.low) {
+      const pos = (q.price - q.low) / (q.high - q.low) * 100;
+      rows.push({ name: "日内位置", read: fmt(pos, 0) + "%", score: pos, w: 50 });
+    }
+  }
+  return rows;
+}
+
+// L3 实际联动匹配：在全池内按30日相关性动态选前5只(ρ>=0.25)组成该票自己的联动篮子
+function linkedRows(sym) {
+  const bars = S.k[sym];
+  if (!bars) return [];
+  const myRets = rets(bars).slice(-30);
+  const universe = [TARGET, ...PEERS.map(p => p.sym), ...WATCHLIST.map(w => w.sym)];
+  const cands = [];
+  for (const o of universe) {
+    if (o === sym || !S.k[o] || !S.q[o]) continue;
+    const c = corr(myRets, rets(S.k[o]).slice(-30));
+    if (c !== null && c >= 0.25) cands.push({ sym: o, c });
+  }
+  cands.sort((a, b) => b.c - a.c);
+  const top = cands.slice(0, 5);
+  if (!top.length) return [];
+  let ws = 0, ps = 0, up = 0;
+  for (const t of top) { const pq = S.q[t.sym]; ws += t.c; ps += t.c * pq.pct; if (pq.pct > 0) up++; }
+  return [
+    { name: "联动组合(ρ加权)", read: signed(ps / ws, "%"), score: lin(ps / ws, -3, 3), w: 70 },
+    { name: "联动票上涨占比", read: up + "/" + top.length, score: up / top.length * 100, w: 30 }
+  ];
+}
+
+// 自选票综合评分：与本票同口径（L1/L2共享市场层，L3按实际联动匹配，L4逐票计算，缺失层重加权）
+function stockScore(sym, l1, l2) {
+  const l3 = layerScore(linkedRows(sym));
+  const l4 = layerScore(l4Rows(sym, benchFor(sym)));
+  const parts = [[l1, 20], [l2, 15], [l3, 25], [l4, 40]];
+  let w = 0, s = 0;
+  for (const [v, wt] of parts) if (Number.isFinite(v)) { w += wt; s += v * wt; }
+  return w ? s / w : null;
+}
+
 function computeFactors() {
   const q = S.q[TARGET], bz = S.q[BENCH];
   const F = { l1: [], l2: [], l3: [], l4: [] };
@@ -509,48 +602,8 @@ function computeFactors() {
   if (cm) F.l3.push({ name: "中证传媒", read: signed(cm.pct, "%"), score: lin(cm.pct, -2.5, 2.5), w: 20 });
   if (kc) F.l3.push({ name: "科创50", read: signed(kc.pct, "%"), score: lin(kc.pct, -2.5, 2.5), w: 20 });
 
-  // ---- L4 个股动能
-  const bars = liveBars(TARGET);
-  if (q && bars && bars.length >= 21) {
-    const closes = bars.map(b => b.close);
-    const m5 = ma(closes, 5), m10 = ma(closes, 10), m20 = ma(closes, 20);
-    const p = q.price;
-    const vsMA20 = (p / m20 - 1) * 100;
-    F.l4.push({ name: "价格vs MA20", read: signed(vsMA20, "%"), score: lin(vsMA20, -6, 6), w: 20 });
-    let maScore = 10, maRead = "空头排列";
-    if (p > m5 && m5 > m10 && m10 > m20) { maScore = 100; maRead = "多头排列"; }
-    else if (p > m5 && m5 > m10) { maScore = 75; maRead = "短多中平"; }
-    else if (p > m5) { maScore = 55; maRead = "价站短线"; }
-    else if (p > m20) { maScore = 40; maRead = "中线未破"; }
-    F.l4.push({ name: "均线结构", read: maRead, score: maScore, w: 20 });
-    if (bz) {
-      const rs = q.pct - bz.pct;
-      F.l4.push({ name: "vs北证50(日内)", read: signed(rs, "pct"), score: lin(rs, -3, 3), w: 20 });
-    }
-    const prev20 = bars.slice(0, -1).slice(-20);
-    const h20 = Math.max(...prev20.map(b => b.high)), l20 = Math.min(...prev20.map(b => b.low));
-    if (h20 > l20) {
-      const pos20 = (p - l20) / (h20 - l20) * 100;
-      F.l4.push({ name: "20日区间位置", read: fmt(Math.max(0, Math.min(100, pos20)), 0) + "%", score: Math.max(0, Math.min(100, pos20)), w: 20 });
-    }
-    const vols = bars.slice(0, -1).slice(-5).map(b => b.vol);
-    const avg5 = vols.length ? vols.reduce((s, x) => s + x, 0) / vols.length : null;
-    const todayVol = bars[bars.length - 1].vol;
-    if (avg5 && todayVol) {
-      const vr = todayVol / avg5;
-      const vScore = q.pct >= 0 ? lin(vr, 0.6, 2.5) : 100 - lin(vr, 0.6, 2.5);
-      const vTag = vr > 1.2 ? (q.pct >= 0 ? " 放量涨" : " 放量跌") : "";
-      F.l4.push({ name: "量比(5日)", read: fmt(vr) + "x" + vTag, score: vScore, w: 20 });
-    }
-  } else if (q && bz) {
-    // K线缺失降级：仅用日内因子
-    const rs = q.pct - bz.pct;
-    F.l4.push({ name: "vs北证50(日内)", read: signed(rs, "pct"), score: lin(rs, -3, 3), w: 50 });
-    if (q.high > q.low) {
-      const pos = (q.price - q.low) / (q.high - q.low) * 100;
-      F.l4.push({ name: "日内位置", read: fmt(pos, 0) + "%", score: pos, w: 50 });
-    }
-  }
+  // ---- L4 个股动能（复用统一口径）
+  F.l4 = l4Rows(TARGET, BENCH);
   return F;
 }
 
@@ -673,7 +726,9 @@ function render() {
       const c = corr(tRets.slice(-30), wr.slice(-30));
       if (c !== null) c30 = c.toFixed(2);
     }
-    return `<tr><td class="n">${w.name}</td><td class="n" style="color:#667085">${w.tag || ""}</td><td class="r">${wq ? fmt(wq.price) : "--"}</td><td class="r ${wq ? toneCls(wq.pct) : ""}">${wq ? signed(wq.pct, "%") : "--"}</td><td class="r">${wq ? fmt(wq.turnover) + "%" : "--"}</td><td class="r">${c30}</td></tr>`;
+    const sc = stockScore(w.sym, L.l1, L.l2);
+    const scCls = !Number.isFinite(sc) ? "" : sc >= 70 ? "up" : sc < 40 ? "down" : "";
+    return `<tr><td class="n">${w.name}</td><td class="n" style="color:#667085">${w.tag || ""}</td><td class="r ${scCls}" style="font-weight:700">${Number.isFinite(sc) ? sc.toFixed(0) : "--"}</td><td class="r">${wq ? fmt(wq.price) : "--"}</td><td class="r ${wq ? toneCls(wq.pct) : ""}">${wq ? signed(wq.pct, "%") : "--"}</td><td class="r">${wq ? fmt(wq.turnover) + "%" : "--"}</td><td class="r">${c30}</td></tr>`;
   }).join("");
 
   // 评分卡
