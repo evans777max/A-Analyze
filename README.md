@@ -1,5 +1,13 @@
 # A-Analyze
 
+![Live](https://img.shields.io/badge/Live-edgeone.cool-46d39a?style=flat-square)
+![Version](https://img.shields.io/badge/version-v2.1-102a43?style=flat-square)
+![Single File](https://img.shields.io/badge/single--file-index.html-blue?style=flat-square)
+![Zero Deps](https://img.shields.io/badge/dependencies-0-success?style=flat-square)
+![Vanilla JS](https://img.shields.io/badge/vanilla-JS%2FCSS-f7df1e?style=flat-square)
+![Market](https://img.shields.io/badge/market-A%E8%82%A1%20%C2%B7%20%E5%8C%97%E4%BA%A4%E6%89%80-d92d20?style=flat-square)
+![Deploy](https://img.shields.io/badge/deploy-EdgeOne%20Pages-102a43?style=flat-square)
+
 单文件、零依赖的 A 股多因子实时分析页。当前标的：流金科技（920021 · 北交所）。
 
 **Live**: https://liujin-live-2.edgeone.cool/
