@@ -1,7 +1,7 @@
 # A-Analyze
 
 ![Live](https://img.shields.io/badge/Live-edgeone.cool-46d39a?style=flat-square)
-![Version](https://img.shields.io/badge/version-v2.3-102a43?style=flat-square)
+![Version](https://img.shields.io/badge/version-v2.4-102a43?style=flat-square)
 ![Single File](https://img.shields.io/badge/single--file-index.html-blue?style=flat-square)
 ![Zero Deps](https://img.shields.io/badge/dependencies-0-success?style=flat-square)
 ![Vanilla JS](https://img.shields.io/badge/vanilla-JS%2FCSS-f7df1e?style=flat-square)
@@ -35,6 +35,8 @@
 - `WATCHLIST`（不参与主标的 L3 评分，但每只票有同口径实时评分：L1/L2 共享市场层，L3 按 30 日实际联动在全池内自动匹配篮子，L4 逐票计算、基准按所属板块适配）：20 只 AI / 云计算 / 数据中心 / 芯片主题池——北交AI（众诚科技、汉鑫科技）、AI芯片（寒武纪、海光信息、中芯国际、澜起科技、北方华创）、算力服务器（中科曙光、浪潮信息、工业富联）、IDC（数据港、润泽科技、光环新网）、光模块（中际旭创、新易盛）、AI应用（科大讯飞、金山办公、昆仑万维）、华为链（拓维信息、软通动力）。按涨跌幅实时排序。
 
 两个数组都在 `index.html` 配置区，直接编辑即可增删。
+
+**用户自选（v2.4）**：页面上可直接输入 6 位代码添加自选票（自动识别沪/深/北交），逐票可删除，上限 40 只，保存在本机浏览器（localStorage）；「分享列表」按钮生成 `?list=` 链接，对方打开即见同一列表的完整分析，且不影响其本机自选。
 
 ## 数据源与架构
 

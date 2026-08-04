@@ -91,6 +91,14 @@ th.r,td.r{text-align:right}
 .tag{padding:4px 7px;font-size:10px;font-weight:700}
 .green{color:#027a48;background:#ecfdf3}.blue{color:#175cd3;background:#eff8ff}.amber{color:#b54708;background:#fffaeb}.red{color:#b42318;background:#fef3f2}
 .srcnote{margin-top:10px;font-size:11px;color:#98a2b3}
+/* 自选管理 */
+.wl-controls{display:flex;gap:6px;flex-wrap:wrap}
+.wl-controls input{width:86px;padding:7px 9px;border:1px solid #ccd4dd;font:13px var(--mono)}
+.wl-btn{border:1px solid #ccd4dd;background:#fff;padding:7px 11px;color:#344054;font-size:12px;cursor:pointer;white-space:nowrap}
+.wl-btn:hover{background:#f5f7fa}
+.wl-msg{margin:0 0 8px;font-size:12px;color:var(--amber);min-height:14px}
+.wl-del{border:0;background:none;color:#98a2b3;font-size:14px;cursor:pointer;padding:2px 6px}
+.wl-del:hover{color:#b42318}
 /* 折叠归因 */
 .attr-details summary{display:flex;align-items:flex-start;justify-content:space-between;cursor:pointer;list-style:none}
 .attr-details summary::-webkit-details-marker{display:none}
@@ -213,10 +221,16 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
     <!-- 自选观察 -->
     <article class="panel full">
       <div class="panel-head">
-        <div><h2>自选观察 · AI/云计算/数据中心/芯片</h2><p class="sub">与本票同口径实时评分：L1/L2共享市场层，L3按30日实际联动自动匹配篮子，L4逐票计算，基准按所属板块适配 · 按涨跌幅排序 · 30日ρ为与本票相关性</p></div>
+        <div><h2>自选观察 · AI/云计算/数据中心/芯片</h2><p class="sub">与本票同口径实时评分：L1/L2共享市场层，L3按30日实际联动自动匹配篮子，L4逐票计算，基准按所属板块适配 · 按涨跌幅排序 · 30日ρ为与本票相关性 · 自选存于本机浏览器</p></div>
+        <div class="wl-controls" id="wlControls">
+          <input id="wlInput" maxlength="6" inputmode="numeric" placeholder="6位代码" onkeydown="if(event.key==='Enter')addStock()">
+          <button class="wl-btn" onclick="addStock()">添加</button>
+          <button class="wl-btn" onclick="shareList()">分享列表</button>
+        </div>
       </div>
+      <p class="wl-msg" id="wlMsg"></p>
       <table>
-        <thead><tr><th>标的</th><th>题材</th><th class="r">评分</th><th class="r">现价</th><th class="r">涨跌幅</th><th class="r">换手</th><th class="r">30日ρ</th></tr></thead>
+        <thead><tr><th>标的</th><th>题材</th><th class="r">评分</th><th class="r">现价</th><th class="r">涨跌幅</th><th class="r">换手</th><th class="r">30日ρ</th><th class="r"></th></tr></thead>
         <tbody id="watchBody"></tbody>
       </table>
     </article>
@@ -248,7 +262,7 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
 
   <footer>
     综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v2.3
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v2.4
   </footer>
 </main>
 
@@ -272,8 +286,8 @@ const PEERS = [
   { sym: "sh601698", name: "中国卫通", corr90: 0.34 },
   { sym: "sh600602", name: "云赛智联", corr90: 0.33 }
 ];
-// 自选观察票（不参与L3评分，仅观察联动；30日ρ由页面实时计算）
-const WATCHLIST = [
+// 默认自选池（用户可在页面上增删，存于 localStorage；URL ?list= 分享模式下整体覆盖）
+const DEFAULT_WATCHLIST = [
   { sym: "bj920207", name: "众诚科技", tag: "北交·AI" },
   { sym: "sz002261", name: "拓维信息", tag: "华为链" },
   { sym: "bj920092", name: "汉鑫科技", tag: "北交·AI" },
@@ -295,6 +309,93 @@ const WATCHLIST = [
   { sym: "sz300418", name: "昆仑万维", tag: "AI大模型" },
   { sym: "sz301236", name: "软通动力", tag: "云·华为链" }
 ];
+const WL_MAX = 40, WL_KEY = "aa_watchlist_v1";
+let WL = [];          // 运行时生效的自选列表
+let URL_MODE = false; // 分享链接查看模式
+
+function loadStore() {
+  try { return JSON.parse(localStorage.getItem(WL_KEY)) || { custom: [], removed: [] }; }
+  catch (e) { return { custom: [], removed: [] }; }
+}
+function saveStore(st) { try { localStorage.setItem(WL_KEY, JSON.stringify(st)); } catch (e) {} }
+
+// 6位代码 -> 带市场前缀的代码；不合法返回 null
+function prefixSym(code) {
+  if (!/^\d{6}$/.test(code)) return null;
+  if (/^(43|83|87|92)/.test(code)) return "bj" + code;
+  if (/^6/.test(code)) return "sh" + code;
+  if (/^[03]/.test(code)) return "sz" + code;
+  return null;
+}
+
+function rebuildWL() {
+  const params = new URLSearchParams(location.search);
+  const listParam = params.get("list");
+  if (listParam) {
+    URL_MODE = true;
+    WL = [];
+    for (const code of listParam.split(",").slice(0, WL_MAX)) {
+      const sym = prefixSym(code.trim());
+      if (!sym || WL.some(w => w.sym === sym)) continue;
+      const def = DEFAULT_WATCHLIST.find(d => d.sym === sym);
+      WL.push(def ? { ...def } : { sym, name: sym.slice(2), tag: "分享" });
+    }
+    return;
+  }
+  const st = loadStore();
+  WL = DEFAULT_WATCHLIST.filter(d => !st.removed.includes(d.sym)).map(d => ({ ...d }));
+  for (const c of st.custom) {
+    if (WL.length >= WL_MAX) break;
+    if (!WL.some(w => w.sym === c.sym)) WL.push({ sym: c.sym, name: c.name, tag: "自定义", custom: true });
+  }
+}
+
+function wlMsg(t) { $("wlMsg").textContent = t || ""; }
+
+async function addStock() {
+  const inp = $("wlInput");
+  const code = (inp.value || "").trim();
+  const sym = prefixSym(code);
+  if (!sym) { wlMsg("请输入合法的6位代码（沪6 / 深0、3 / 北交43、83、87、92开头）"); return; }
+  if (WL.some(w => w.sym === sym) || sym === TARGET) { wlMsg("该票已在列表中"); return; }
+  if (WL.length >= WL_MAX) { wlMsg("已达上限 " + WL_MAX + " 只，请先删除部分再添加"); return; }
+  wlMsg("验证中…");
+  const ok = await jsonp("https://qt.gtimg.cn/q=" + sym, { charset: "gbk" });
+  const q = ok ? parseQt(window["v_" + sym]) : null;
+  if (!q || !q.name) { wlMsg("代码无效或行情不可用：" + code); return; }
+  const st = loadStore();
+  st.custom.push({ sym, name: q.name });
+  saveStore(st);
+  rebuildWL();
+  S.q[sym] = q;
+  inp.value = "";
+  wlMsg("已添加 " + q.name + "（" + code + "）");
+  loadKlines([sym]); // 增量拉该票K线
+  compute();
+}
+
+function removeStock(sym) {
+  const st = loadStore();
+  const ci = st.custom.findIndex(c => c.sym === sym);
+  if (ci >= 0) st.custom.splice(ci, 1);
+  else if (!st.removed.includes(sym)) st.removed.push(sym);
+  saveStore(st);
+  rebuildWL();
+  wlMsg("");
+  compute();
+}
+
+function shareList() {
+  const codes = WL.map(w => w.sym.slice(2)).join(",");
+  const url = location.origin + location.pathname + "?list=" + codes;
+  const done = () => wlMsg("分享链接已复制，发给对方即可看到同一列表");
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(done, () => window.prompt("复制此链接：", url));
+  } else window.prompt("复制此链接：", url);
+}
+
+function exitShare() { location.href = location.origin + location.pathname; }
+
 const TARGET = "bj920021", BENCH = "bj899050";
 const INDEXES = [
   { sym: "sh000001", name: "上证指数",  tag: "A股" },
@@ -357,7 +458,7 @@ function parseQt(raw) {
 }
 
 async function loadQuotes() {
-  const syms = [TARGET, BENCH, ...INDEXES.map(x => x.sym), ...PEERS.map(x => x.sym), ...WATCHLIST.map(x => x.sym)];
+  const syms = [TARGET, BENCH, ...INDEXES.map(x => x.sym), ...PEERS.map(x => x.sym), ...WL.map(x => x.sym)];
   const uniq = [...new Set(syms)];
   const ok = await jsonp("https://qt.gtimg.cn/q=" + uniq.join(","), { charset: "gbk" });
   if (ok) {
@@ -371,8 +472,8 @@ async function loadQuotes() {
   compute();
 }
 
-async function loadKlines() {
-  const syms = [TARGET, BENCH, ...PEERS.map(x => x.sym), ...WATCHLIST.map(x => x.sym)];
+async function loadKlines(only) {
+  const syms = Array.isArray(only) ? only : [TARGET, BENCH, ...PEERS.map(x => x.sym), ...WL.map(x => x.sym)];
   let got = 0;
   for (const sym of syms) {
     const v = "_k" + sym;
@@ -386,7 +487,8 @@ async function loadKlines() {
       got++;
     }
   }
-  S.health.sina = got > 0;
+  if (!Array.isArray(only)) S.health.sina = got > 0;
+  else if (got > 0) S.health.sina = true;
   compute();
 }
 
@@ -540,7 +642,7 @@ function linkedRows(sym) {
   const bars = S.k[sym];
   if (!bars) return [];
   const myRets = rets(bars).slice(-30);
-  const universe = [TARGET, ...PEERS.map(p => p.sym), ...WATCHLIST.map(w => w.sym)];
+  const universe = [TARGET, ...PEERS.map(p => p.sym), ...WL.map(w => w.sym)];
   const cands = [];
   for (const o of universe) {
     if (o === sym || !S.k[o] || !S.q[o]) continue;
@@ -713,7 +815,7 @@ function render() {
   }).join("");
 
   // 自选观察表（按涨跌幅降序，无行情的排最后）
-  const wSorted = WATCHLIST.slice().sort((a, b) => {
+  const wSorted = WL.slice().sort((a, b) => {
     const pa = S.q[a.sym] ? S.q[a.sym].pct : -Infinity;
     const pb = S.q[b.sym] ? S.q[b.sym].pct : -Infinity;
     return pb - pa;
@@ -728,7 +830,9 @@ function render() {
     }
     const sc = stockScore(w.sym, L.l1, L.l2);
     const scCls = !Number.isFinite(sc) ? "" : sc >= 70 ? "up" : sc < 40 ? "down" : "";
-    return `<tr><td class="n">${w.name}</td><td class="n" style="color:#667085">${w.tag || ""}</td><td class="r ${scCls}" style="font-weight:700">${Number.isFinite(sc) ? sc.toFixed(0) : "--"}</td><td class="r">${wq ? fmt(wq.price) : "--"}</td><td class="r ${wq ? toneCls(wq.pct) : ""}">${wq ? signed(wq.pct, "%") : "--"}</td><td class="r">${wq ? fmt(wq.turnover) + "%" : "--"}</td><td class="r">${c30}</td></tr>`;
+    const name = (wq && wq.name) ? wq.name : w.name;
+    const del = URL_MODE ? "" : `<button class="wl-del" onclick="removeStock('${w.sym}')" title="从列表删除">×</button>`;
+    return `<tr><td class="n">${name}</td><td class="n" style="color:#667085">${w.tag || ""}</td><td class="r ${scCls}" style="font-weight:700">${Number.isFinite(sc) ? sc.toFixed(0) : "--"}</td><td class="r">${wq ? fmt(wq.price) : "--"}</td><td class="r ${wq ? toneCls(wq.pct) : ""}">${wq ? signed(wq.pct, "%") : "--"}</td><td class="r">${wq ? fmt(wq.turnover) + "%" : "--"}</td><td class="r">${c30}</td><td class="r">${del}</td></tr>`;
   }).join("");
 
   // 评分卡
@@ -803,6 +907,10 @@ function compute() { try { render(); } catch (e) { $("stamp").textContent = "渲
 
 /* ================= 启动 ================= */
 function refreshAll() { loadQuotes(); loadKlines(); loadGlobal(); }
+rebuildWL();
+if (URL_MODE) {
+  $("wlControls").innerHTML = `<span style="font-size:12px;color:#667085;align-self:center">正在查看分享列表（本机自选未受影响）</span><button class="wl-btn" onclick="exitShare()">返回我的列表</button>`;
+}
 loadQuotes(); loadKlines(); loadGlobal();
 setInterval(loadQuotes, CONFIG.QUOTE_MS);
 setInterval(loadKlines, CONFIG.KLINE_MS);
