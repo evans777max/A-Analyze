@@ -91,6 +91,11 @@ th.r,td.r{text-align:right}
 .tag{padding:4px 7px;font-size:10px;font-weight:700}
 .green{color:#027a48;background:#ecfdf3}.blue{color:#175cd3;background:#eff8ff}.amber{color:#b54708;background:#fffaeb}.red{color:#b42318;background:#fef3f2}
 .srcnote{margin-top:10px;font-size:11px;color:#98a2b3}
+/* 表格横向滚动容器（窄屏防溢出） */
+.tbl-wrap{overflow-x:auto}
+/* 可排序列头 */
+th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
+th.sortable:hover,th.sortable.active{color:var(--ink)}
 /* 自选管理 */
 .wl-controls{display:flex;gap:6px;flex-wrap:wrap}
 .wl-controls input{width:86px;padding:7px 9px;border:1px solid #ccd4dd;font:13px var(--mono)}
@@ -181,13 +186,13 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
     <!-- L3 板块联动 -->
     <article class="panel">
       <div class="panel-head">
-        <div><h2>板块联动 <small style="color:#98a2b3;font-size:11px">L3 · 权重25%</small></h2><p class="sub">数据筛选的高相关标的与板块代理（90日收益率相关性）</p></div>
+        <div><h2>板块联动 <small style="color:#98a2b3;font-size:11px">L3 · 权重25%</small></h2><p class="sub">高相关标的与板块代理 · 90日ρ为2026-08筛选基线，30日ρ实时滚动</p></div>
         <span class="lscore" id="l3score">--</span>
       </div>
-      <table>
+      <div class="tbl-wrap"><table>
         <thead><tr><th>标的</th><th class="r">现价</th><th class="r">涨跌幅</th><th class="r">90日ρ</th><th class="r">30日ρ</th></tr></thead>
         <tbody id="peerBody"></tbody>
-      </table>
+      </table></div>
     </article>
 
     <!-- L4 个股动能 -->
@@ -221,7 +226,7 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
     <!-- 自选观察 -->
     <article class="panel full">
       <div class="panel-head">
-        <div><h2>自选观察 · AI/云计算/数据中心/芯片</h2><p class="sub">与本票同口径实时评分：L1/L2共享市场层，L3按30日实际联动自动匹配篮子，L4逐票计算，基准按所属板块适配 · 按涨跌幅排序 · 30日ρ为与本票相关性 · 自选存于本机浏览器</p></div>
+        <div><h2>自选观察 · AI/云计算/数据中心/芯片</h2><p class="sub">与本票同口径实时评分（L3按实际联动匹配，基准按板块适配）· 点击列标题排序 · 自选存于本机浏览器</p></div>
         <div class="wl-controls" id="wlControls">
           <input id="wlInput" maxlength="6" inputmode="numeric" placeholder="6位代码" onkeydown="if(event.key==='Enter')addStock()">
           <button class="wl-btn" onclick="addStock()">添加</button>
@@ -229,10 +234,10 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
         </div>
       </div>
       <p class="wl-msg" id="wlMsg"></p>
-      <table>
-        <thead><tr><th>标的</th><th>题材</th><th class="r">评分</th><th class="r">现价</th><th class="r">涨跌幅</th><th class="r">换手</th><th class="r">30日ρ</th><th class="r"></th></tr></thead>
+      <div class="tbl-wrap"><table>
+        <thead id="watchHead"></thead>
         <tbody id="watchBody"></tbody>
-      </table>
+      </table></div>
     </article>
 
     <!-- 条件式剧本 -->
@@ -251,10 +256,10 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
           <div><h2>评分归因</h2><p class="sub">每一分的来源 · 模型完全透明 · 点击展开</p></div>
           <span class="chev">▾</span>
         </summary>
-        <table style="margin-top:12px">
+        <div class="tbl-wrap"><table style="margin-top:12px">
           <thead><tr><th>层</th><th>因子</th><th class="r">读数</th><th class="r">因子分</th><th class="r">层内权重</th><th class="r">贡献</th></tr></thead>
           <tbody id="attrBody"></tbody>
-        </table>
+        </table></div>
       </details>
       <div class="srcnote" id="healthNote"></div>
     </article>
@@ -262,7 +267,7 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
 
   <footer>
     综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v2.4
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v2.5
   </footer>
 </main>
 
@@ -396,6 +401,22 @@ function shareList() {
 
 function exitShare() { location.href = location.origin + location.pathname; }
 
+// 自选表排序（点击列头切换，偏好存本机）
+const SORT_KEY = "aa_sort_v1", SORT_COLS = { score: "评分", price: "现价", pct: "涨跌幅", turnover: "换手", corr: "30日ρ" };
+let WSORT = (() => {
+  try {
+    const s = JSON.parse(localStorage.getItem(SORT_KEY));
+    if (s && SORT_COLS[s.key] && (s.dir === 1 || s.dir === -1)) return s;
+  } catch (e) {}
+  return { key: "score", dir: -1 };
+})();
+function setSort(key) {
+  if (WSORT.key === key) WSORT.dir = -WSORT.dir;
+  else WSORT = { key, dir: -1 };
+  try { localStorage.setItem(SORT_KEY, JSON.stringify(WSORT)); } catch (e) {}
+  compute();
+}
+
 const TARGET = "bj920021", BENCH = "bj899050";
 const INDEXES = [
   { sym: "sh000001", name: "上证指数",  tag: "A股" },
@@ -472,21 +493,31 @@ async function loadQuotes() {
   compute();
 }
 
+async function fetchK(sym) {
+  const v = "_k" + sym;
+  const url = "https://quotes.sina.cn/cn/api/jsonp_v2.php/var%20" + v +
+    "=/CN_MarketDataService.getKLineData?symbol=" + sym + "&scale=240&ma=no&datalen=90";
+  const ok = await jsonp(url, { charset: "gbk" });
+  if (ok && Array.isArray(window[v]) && window[v].length > 10) {
+    S.k[sym] = window[v].map(b => ({
+      day: b.day, open: +b.open, high: +b.high, low: +b.low, close: +b.close, vol: +b.volume
+    }));
+    return true;
+  }
+  return false;
+}
+
 async function loadKlines(only) {
   const syms = Array.isArray(only) ? only : [TARGET, BENCH, ...PEERS.map(x => x.sym), ...WL.map(x => x.sym)];
+  S.kloading = true;
   let got = 0;
-  for (const sym of syms) {
-    const v = "_k" + sym;
-    const url = "https://quotes.sina.cn/cn/api/jsonp_v2.php/var%20" + v +
-      "=/CN_MarketDataService.getKLineData?symbol=" + sym + "&scale=240&ma=no&datalen=90";
-    const ok = await jsonp(url, { charset: "gbk" });
-    if (ok && Array.isArray(window[v]) && window[v].length > 10) {
-      S.k[sym] = window[v].map(b => ({
-        day: b.day, open: +b.open, high: +b.high, low: +b.low, close: +b.close, vol: +b.volume
-      }));
-      got++;
-    }
+  const CHUNK = 5; // 每批5只并行，兼顾速度与限流
+  for (let i = 0; i < syms.length; i += CHUNK) {
+    const res = await Promise.all(syms.slice(i, i + CHUNK).map(fetchK));
+    got += res.filter(Boolean).length;
+    compute(); // 渐进渲染：每批完成即刷新
   }
+  S.kloading = false;
   if (!Array.isArray(only)) S.health.sina = got > 0;
   else if (got > 0) S.health.sina = true;
   compute();
@@ -814,25 +845,42 @@ function render() {
     return `<tr><td class="n">${p.name}</td><td class="r">${pq ? fmt(pq.price) : "--"}</td><td class="r ${pq ? toneCls(pq.pct) : ""}">${pq ? signed(pq.pct, "%") : "--"}</td><td class="r">${p.corr90.toFixed(2)}</td><td class="r">${c30}</td></tr>`;
   }).join("");
 
-  // 自选观察表（按涨跌幅降序，无行情的排最后）
-  const wSorted = WL.slice().sort((a, b) => {
-    const pa = S.q[a.sym] ? S.q[a.sym].pct : -Infinity;
-    const pb = S.q[b.sym] ? S.q[b.sym].pct : -Infinity;
-    return pb - pa;
-  });
-  $("watchBody").innerHTML = wSorted.map(w => {
+  // 自选观察表：任意列排序（默认评分降序），缺失值恒排最后
+  const wRows = WL.map(w => {
     const wq = S.q[w.sym];
-    let c30 = "--";
+    let c30 = null;
     if (tRets && S.k[w.sym]) {
-      const wr = rets(S.k[w.sym]);
-      const c = corr(tRets.slice(-30), wr.slice(-30));
-      if (c !== null) c30 = c.toFixed(2);
+      const c = corr(tRets.slice(-30), rets(S.k[w.sym]).slice(-30));
+      if (c !== null) c30 = c;
     }
     const sc = stockScore(w.sym, L.l1, L.l2);
+    return { w, wq, sc, c30, vals: {
+      score: Number.isFinite(sc) ? sc : null,
+      price: wq && Number.isFinite(wq.price) ? wq.price : null,
+      pct: wq && Number.isFinite(wq.pct) ? wq.pct : null,
+      turnover: wq && Number.isFinite(wq.turnover) ? wq.turnover : null,
+      corr: c30
+    } };
+  });
+  wRows.sort((a, b) => {
+    const va = a.vals[WSORT.key], vb = b.vals[WSORT.key];
+    if (va === null && vb === null) return 0;
+    if (va === null) return 1;
+    if (vb === null) return -1;
+    return (va - vb) * WSORT.dir;
+  });
+  $("watchHead").innerHTML = "<tr><th>标的</th><th>题材</th>" + Object.entries(SORT_COLS).map(([k, label]) => {
+    const active = WSORT.key === k;
+    const arr = active ? (WSORT.dir === -1 ? " ▼" : " ▲") : "";
+    const aria = active ? (WSORT.dir === -1 ? "descending" : "ascending") : "none";
+    return `<th class="r sortable${active ? " active" : ""}" tabindex="0" role="button" aria-sort="${aria}" title="点击按${label}排序" onclick="setSort('${k}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();setSort('${k}')}">${label}${arr}</th>`;
+  }).join("") + '<th class="r"></th></tr>';
+  $("watchBody").innerHTML = wRows.map(r => {
+    const { w, wq, sc } = r;
     const scCls = !Number.isFinite(sc) ? "" : sc >= 70 ? "up" : sc < 40 ? "down" : "";
     const name = (wq && wq.name) ? wq.name : w.name;
     const del = URL_MODE ? "" : `<button class="wl-del" onclick="removeStock('${w.sym}')" title="从列表删除">×</button>`;
-    return `<tr><td class="n">${name}</td><td class="n" style="color:#667085">${w.tag || ""}</td><td class="r ${scCls}" style="font-weight:700">${Number.isFinite(sc) ? sc.toFixed(0) : "--"}</td><td class="r">${wq ? fmt(wq.price) : "--"}</td><td class="r ${wq ? toneCls(wq.pct) : ""}">${wq ? signed(wq.pct, "%") : "--"}</td><td class="r">${wq ? fmt(wq.turnover) + "%" : "--"}</td><td class="r">${c30}</td><td class="r">${del}</td></tr>`;
+    return `<tr><td class="n">${name}</td><td class="n" style="color:#667085">${w.tag || ""}</td><td class="r ${scCls}" style="font-weight:700">${Number.isFinite(sc) ? sc.toFixed(0) : "--"}</td><td class="r">${wq ? fmt(wq.price) : "--"}</td><td class="r ${wq ? toneCls(wq.pct) : ""}">${wq ? signed(wq.pct, "%") : "--"}</td><td class="r">${wq ? fmt(wq.turnover) + "%" : "--"}</td><td class="r">${r.c30 === null ? "--" : r.c30.toFixed(2)}</td><td class="r">${del}</td></tr>`;
   }).join("");
 
   // 评分卡
@@ -898,7 +946,7 @@ function render() {
   $("attrBody").innerHTML = attrHtml;
   const hs = [];
   hs.push("腾讯行情 " + (S.health.tencent ? "正常" : "异常"));
-  hs.push("新浪K线 " + (S.health.sina ? "正常" : "异常"));
+  hs.push("新浪K线 " + (S.kloading ? "加载中…" : (S.health.sina ? "正常" : "异常")));
   hs.push("日韩指数 " + (S.health.em ? "正常" : "降级"));
   $("healthNote").textContent = "数据源状态：" + hs.join(" · ") + " · 缺失源自动重新加权，不影响其余因子。";
 }

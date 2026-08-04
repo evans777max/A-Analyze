@@ -1,7 +1,7 @@
 # A-Analyze
 
 ![Live](https://img.shields.io/badge/Live-edgeone.cool-46d39a?style=flat-square)
-![Version](https://img.shields.io/badge/version-v2.4-102a43?style=flat-square)
+![Version](https://img.shields.io/badge/version-v2.5-102a43?style=flat-square)
 ![Single File](https://img.shields.io/badge/single--file-index.html-blue?style=flat-square)
 ![Zero Deps](https://img.shields.io/badge/dependencies-0-success?style=flat-square)
 ![Vanilla JS](https://img.shields.io/badge/vanilla-JS%2FCSS-f7df1e?style=flat-square)
@@ -36,7 +36,7 @@
 
 两个数组都在 `index.html` 配置区，直接编辑即可增删。
 
-**用户自选（v2.4）**：页面上可直接输入 6 位代码添加自选票（自动识别沪/深/北交），逐票可删除，上限 40 只，保存在本机浏览器（localStorage）；「分享列表」按钮生成 `?list=` 链接，对方打开即见同一列表的完整分析，且不影响其本机自选。
+**用户自选（v2.4+）**：页面上可直接输入 6 位代码添加自选票（自动识别沪/深/北交），逐票可删除，上限 40 只，保存在本机浏览器（localStorage）；「分享列表」按钮生成 `?list=` 链接，对方打开即见同一列表的完整分析，且不影响其本机自选。表格支持按评分 / 现价 / 涨跌幅 / 换手 / 30日ρ 任意列排序（点击列头切换升降序，偏好本机记忆，默认评分降序）。
 
 ## 数据源与架构
 
