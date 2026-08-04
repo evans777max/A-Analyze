@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102a43">
-<meta name="description" content="流金科技（920021）多因子综合分析：市场环境、全球情绪、板块联动、个股动能与仓位建议">
-<title>流金科技 · 多因子综合看盘</title>
+<meta name="description" content="A-Analyze 多因子综合分析：市场环境、全球情绪、板块联动、个股动能与仓位建议">
+<title>A-Analyze · 多因子综合看盘</title>
 <style>
 :root{--ink:#101828;--muted:#667085;--line:#e4e7ec;--paper:#fff;--wash:#f5f7fa;--red:#d92d20;--green:#039855;--navy:#102a43;--amber:#b54708;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 *{box-sizing:border-box}html{background:var(--wash)}
@@ -104,7 +104,7 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
 </head>
 <body>
 <header class="topbar">
-  <div class="brand"><i class="dot"></i>流金科技 · 多因子综合看盘</div>
+  <div class="brand"><i class="dot"></i>A-Analyze · 多因子综合看盘</div>
   <div class="live" id="liveTag">10秒自动刷新</div>
 </header>
 <main class="shell">
@@ -186,6 +186,17 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
       <div id="l4rows"></div>
     </article>
 
+    <!-- 自选观察 -->
+    <article class="panel">
+      <div class="panel-head">
+        <div><h2>自选观察</h2><p class="sub">自选关注票 · 不参与评分，仅观察与本票联动</p></div>
+      </div>
+      <table>
+        <thead><tr><th>标的</th><th class="r">现价</th><th class="r">涨跌幅</th><th class="r">换手</th><th class="r">30日ρ</th></tr></thead>
+        <tbody id="watchBody"></tbody>
+      </table>
+    </article>
+
     <!-- 关键价格带 -->
     <article class="panel">
       <div class="panel-head">
@@ -229,7 +240,7 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
 
   <footer>
     综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v2.0
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v2.1
   </footer>
 </main>
 
@@ -252,6 +263,12 @@ const PEERS = [
   { sym: "sh688158", name: "优刻得",   corr90: 0.48 },
   { sym: "sh601698", name: "中国卫通", corr90: 0.34 },
   { sym: "sh600602", name: "云赛智联", corr90: 0.33 }
+];
+// 自选观察票（不参与L3评分，仅观察联动；30日ρ由页面实时计算）
+const WATCHLIST = [
+  { sym: "bj920207", name: "众诚科技" },
+  { sym: "sz002261", name: "拓维信息" },
+  { sym: "bj920092", name: "汉鑫科技" }
 ];
 const TARGET = "bj920021", BENCH = "bj899050";
 const INDEXES = [
@@ -314,7 +331,7 @@ function parseQt(raw) {
 }
 
 async function loadQuotes() {
-  const syms = [TARGET, BENCH, ...INDEXES.map(x => x.sym), ...PEERS.map(x => x.sym)];
+  const syms = [TARGET, BENCH, ...INDEXES.map(x => x.sym), ...PEERS.map(x => x.sym), ...WATCHLIST.map(x => x.sym)];
   const uniq = [...new Set(syms)];
   const ok = await jsonp("https://qt.gtimg.cn/q=" + uniq.join(","), { charset: "gbk" });
   if (ok) {
@@ -329,7 +346,7 @@ async function loadQuotes() {
 }
 
 async function loadKlines() {
-  const syms = [TARGET, BENCH, ...PEERS.map(x => x.sym)];
+  const syms = [TARGET, BENCH, ...PEERS.map(x => x.sym), ...WATCHLIST.map(x => x.sym)];
   let got = 0;
   for (const sym of syms) {
     const v = "_k" + sym;
@@ -615,6 +632,18 @@ function render() {
       if (c !== null) c30 = c.toFixed(2);
     }
     return `<tr><td class="n">${p.name}</td><td class="r">${pq ? fmt(pq.price) : "--"}</td><td class="r ${pq ? toneCls(pq.pct) : ""}">${pq ? signed(pq.pct, "%") : "--"}</td><td class="r">${p.corr90.toFixed(2)}</td><td class="r">${c30}</td></tr>`;
+  }).join("");
+
+  // 自选观察表
+  $("watchBody").innerHTML = WATCHLIST.map(w => {
+    const wq = S.q[w.sym];
+    let c30 = "--";
+    if (tRets && S.k[w.sym]) {
+      const wr = rets(S.k[w.sym]);
+      const c = corr(tRets.slice(-30), wr.slice(-30));
+      if (c !== null) c30 = c.toFixed(2);
+    }
+    return `<tr><td class="n">${w.name}</td><td class="r">${wq ? fmt(wq.price) : "--"}</td><td class="r ${wq ? toneCls(wq.pct) : ""}">${wq ? signed(wq.pct, "%") : "--"}</td><td class="r">${wq ? fmt(wq.turnover) + "%" : "--"}</td><td class="r">${c30}</td></tr>`;
   }).join("");
 
   // 评分卡
