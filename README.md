@@ -1,7 +1,7 @@
 # A-Analyze
 
 ![Live](https://img.shields.io/badge/Live-edgeone.cool-46d39a?style=flat-square)
-![Version](https://img.shields.io/badge/version-v2.7-102a43?style=flat-square)
+![Version](https://img.shields.io/badge/version-v3.0-102a43?style=flat-square)
 ![Single File](https://img.shields.io/badge/single--file-index.html-blue?style=flat-square)
 ![Zero Deps](https://img.shields.io/badge/dependencies-0-success?style=flat-square)
 ![Vanilla JS](https://img.shields.io/badge/vanilla-JS%2FCSS-f7df1e?style=flat-square)
@@ -49,6 +49,16 @@
 - 东方财富 `push2.eastmoney.com`：日经 / KOSPI（60 秒刷新，不可达时自动降级重加权）
 
 任一数据源失效不影响其余因子，评分自动按可用因子重新加权，页面底部有数据源健康状态。
+
+## 多标的切换（v3.0）
+
+点击自选表中的股票名即可把全页分析（评分卡 / 关键价格带 / 条件剧本 / 四层因子 / 日内强弱）切换到该标的，秒切无需刷新；主标的流金科技保留精筛关联池，其他标的的 L3 面板自动展示其实际联动篮子。支持 `?stock=002261` 深度链接直达指定标的视图，与 `?list=` 可组合分享。
+
+v3.0 其他增强：
+- 量比修正：盘中按已开盘时长折算，消除上午量比系统性低估（标注"折算"）
+- 评分历史：每日评分自动留痕于本机，评分卡下方显示近 20 个交易日评分轨迹（55 分持有线为参照）
+- 跨市场归一化：联动篮子聚合时将 30cm/20cm 标的涨跌折算到 10cm 口径，消除北交所/双创票对篮子的过度牵引
+- 条件剧本高亮当前价格所处区间；自选表新增名称/题材/代码筛选框
 
 ## 部署
 

@@ -104,6 +104,14 @@ th.sortable:hover,th.sortable.active{color:var(--ink)}
 .wl-msg{margin:0 0 8px;font-size:12px;color:var(--amber);min-height:14px}
 .wl-del{border:0;background:none;color:#98a2b3;font-size:14px;cursor:pointer;padding:2px 6px}
 .wl-del:hover{color:#b42318}
+/* 可点击切换的股票名 */
+.wl-link{cursor:pointer;border-bottom:1px dashed #b8c4d0}
+.wl-link:hover{color:var(--navy);border-bottom-color:var(--navy)}
+.wl-link.cur{color:#b42318;font-weight:700;border-bottom:0}
+/* 剧本当前区间高亮 */
+.guidance>div.on{background:#f5faff}
+/* 评分历史 */
+.hist{margin-top:14px;padding-top:10px;border-top:1px solid var(--line)}
 /* 折叠归因 */
 .attr-details summary{display:flex;align-items:flex-start;justify-content:space-between;cursor:pointer;list-style:none}
 .attr-details summary::-webkit-details-marker{display:none}
@@ -133,8 +141,8 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
   <!-- 主报价 + 综合评分 -->
   <section class="hero">
     <div class="card main">
-      <span class="eyebrow">920021 · 北京证券交易所 · 传媒/AI应用</span>
-      <h1>流金科技</h1>
+      <span class="eyebrow" id="stockMeta">920021 · 北京证券交易所 · 传媒/AI应用</span>
+      <h1><span id="stockName">流金科技</span> <button id="homeBtn" class="wl-btn" style="display:none;vertical-align:middle;margin-left:8px" onclick="goHome()">返回流金科技</button></h1>
       <div class="quote"><strong class="price" id="price">--</strong><span class="change" id="change">--</span></div>
       <p class="stamp" id="stamp">正在连接行情源…</p>
     </div>
@@ -150,6 +158,7 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
         </div>
         <div class="verdict" id="verdict"><b>计算中</b><span class="pos">-- 仓位档</span><p>等待行情与历史数据就绪。</p></div>
       </div>
+      <div class="hist"><svg id="histSvg" width="100%" height="40" viewBox="0 0 300 40" preserveAspectRatio="none"></svg><p class="sub" id="histNote" style="margin-top:4px"></p></div>
     </div>
   </section>
 
@@ -186,11 +195,11 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
     <!-- L3 板块联动 -->
     <article class="panel">
       <div class="panel-head">
-        <div><h2>板块联动 <small style="color:#98a2b3;font-size:11px">L3 · 权重25%</small></h2><p class="sub">高相关标的与板块代理 · 90日ρ为2026-08筛选基线，30日ρ实时滚动</p></div>
+        <div><h2>板块联动 <small style="color:#98a2b3;font-size:11px">L3 · 权重25%</small></h2><p class="sub" id="l3sub">高相关标的与板块代理 · 90日ρ为2026-08筛选基线，30日ρ实时滚动</p></div>
         <span class="lscore" id="l3score">--</span>
       </div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>标的</th><th class="r">现价</th><th class="r">涨跌幅</th><th class="r">90日ρ</th><th class="r">30日ρ</th></tr></thead>
+        <thead id="peerHead"><tr><th>标的</th><th class="r">现价</th><th class="r">涨跌幅</th><th class="r">90日ρ</th><th class="r">30日ρ</th></tr></thead>
         <tbody id="peerBody"></tbody>
       </table></div>
     </article>
@@ -228,6 +237,7 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
       <div class="panel-head">
         <div><h2>自选观察 · AI/云计算/数据中心/芯片</h2><p class="sub">与本票同口径实时评分（L3按实际联动匹配，基准按板块适配）· 点击列标题排序 · 自选存于本机浏览器</p></div>
         <div class="wl-controls" id="wlControls">
+          <input id="wlFilter" placeholder="筛选名称/题材/代码" style="width:130px" oninput="compute()">
           <input id="wlInput" maxlength="6" inputmode="numeric" placeholder="6位代码" onkeydown="if(event.key==='Enter')addStock()">
           <button class="wl-btn" onclick="addStock()">添加</button>
           <button class="wl-btn" onclick="shareList()">分享列表</button>
@@ -267,7 +277,7 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
 
   <footer>
     综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v2.7
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.0
   </footer>
 </main>
 
@@ -275,8 +285,8 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
 "use strict";
 /* ================= 配置区（可手工维护） ================= */
 const CONFIG = {
-  // 手工覆盖关键价位：设为数组即生效，null 则自动推导
-  // 示例：[{p:7.62,l:"加速确认",n:"有效突破后观察量能"},{p:7.10,l:"趋势防线",n:"失守则结构转弱"}]
+  // 手工覆盖关键价位：null=全自动推导；
+  // 数组=仅作用于主标的流金；对象=按代码分票，如 {"bj920021":[{p:7.62,l:"加速确认",n:"说明"}]}
   MANUAL_LEVELS: null,
   QUOTE_MS: 10000,      // 实时报价刷新
   KLINE_MS: 600000,     // K线刷新（10分钟）
@@ -333,6 +343,25 @@ function prefixSym(code) {
   return null;
 }
 
+// 各市场涨跌幅限制（用于跨市场pct归一化；指数按10）
+function limitFor(sym) {
+  if (IDX_CANDS.includes(sym)) return 10;
+  if (sym.startsWith("bj")) return 30;
+  if (sym.startsWith("sh688") || sym.startsWith("sz30")) return 20;
+  return 10;
+}
+
+// 已开盘交易分钟数（沪深北均为240分钟制），用于盘中量比折算
+function tradedMinutes(t) {
+  if (!t || t.length < 12) return 240;
+  const m = +t.slice(8, 10) * 60 + +t.slice(10, 12);
+  if (m <= 570) return 0;          // 9:30前
+  if (m <= 690) return m - 570;    // 上午盘
+  if (m <= 780) return 120;        // 午休
+  if (m <= 900) return 120 + m - 780; // 下午盘
+  return 240;
+}
+
 function rebuildWL() {
   const params = new URLSearchParams(location.search);
   const listParam = params.get("list");
@@ -362,7 +391,7 @@ async function addStock() {
   const code = (inp.value || "").trim();
   const sym = prefixSym(code);
   if (!sym) { wlMsg("请输入合法的6位代码（沪6 / 深0、3 / 北交43、83、87、92开头）"); return; }
-  if (WL.some(w => w.sym === sym) || sym === TARGET) { wlMsg("该票已在列表中"); return; }
+  if (WL.some(w => w.sym === sym) || sym === HOME) { wlMsg("该票已在列表中"); return; }
   if (WL.length >= WL_MAX) { wlMsg("已达上限 " + WL_MAX + " 只，请先删除部分再添加"); return; }
   wlMsg("验证中…");
   const ok = await jsonp("https://qt.gtimg.cn/q=" + sym, { charset: "gbk" });
@@ -392,7 +421,8 @@ function removeStock(sym) {
 
 function shareList() {
   const codes = WL.map(w => w.sym.slice(2)).join(",");
-  const url = location.origin + location.pathname + "?list=" + codes;
+  let url = location.origin + location.pathname + "?list=" + codes;
+  if (TARGET !== HOME) url += "&stock=" + TARGET.slice(2);
   const done = () => wlMsg("分享链接已复制，发给对方即可看到同一列表");
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(url).then(done, () => window.prompt("复制此链接：", url));
@@ -417,7 +447,21 @@ function setSort(key) {
   compute();
 }
 
-const TARGET = "bj920021", BENCH = "bj899050";
+const HOME = "bj920021";        // 主标的：流金科技
+let TARGET = HOME;              // 当前分析标的（点自选票可切换）
+let BENCH = "bj899050";         // 当前基准（随标的所属市场自动适配）
+
+// 切换分析标的：全页分析（评分/价位/剧本/因子）即时切换，无需刷新
+function setTarget(sym) {
+  if (sym === TARGET) return;
+  TARGET = sym;
+  BENCH = benchFor(sym);
+  if (!S.k[sym]) loadKlines([sym]);
+  loadQuotes();
+  compute();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function goHome() { setTarget(HOME); }
 const INDEXES = [
   { sym: "sh000001", name: "上证指数",  tag: "A股" },
   { sym: "sz399001", name: "深证成指",  tag: "A股" },
@@ -582,7 +626,9 @@ function liveBars(sym) {
 
 /* ================= 动态价格带 ================= */
 function buildLevels(bars, q) {
-  if (CONFIG.MANUAL_LEVELS) return { list: CONFIG.MANUAL_LEVELS, mode: "手工维护（CONFIG.MANUAL_LEVELS）" };
+  const ml = CONFIG.MANUAL_LEVELS;
+  const manual = ml ? (Array.isArray(ml) ? (TARGET === HOME ? ml : null) : ml[TARGET]) : null;
+  if (manual && manual.length) return { list: manual, mode: "手工维护（CONFIG.MANUAL_LEVELS）" };
   if (!bars || bars.length < 21) return { list: [], mode: "历史数据不足" };
   const closes = bars.map(b => b.close);
   const prevBars = bars.slice(0, -1); // 不含今日，避免自证
@@ -611,6 +657,7 @@ function buildLevels(bars, q) {
 /* ================= 因子模型 ================= */
 // 市场基准匹配：按票所属板块选对应指数
 const BENCH_NAME = { bj899050: "北证50", sh000688: "科创50", sz399006: "创业板指", sz399001: "深成指", sh000001: "上证" };
+const MKT_NAME = { bj: "北京证券交易所", sh: "上海证券交易所", sz: "深圳证券交易所" };
 function benchFor(sym) {
   if (sym.startsWith("bj")) return "bj899050";
   if (sym.startsWith("sh688")) return "sh000688";
@@ -652,10 +699,13 @@ function l4Rows(sym, benchSym) {
     const avg5 = vols.length ? vols.reduce((s, x) => s + x, 0) / vols.length : null;
     const todayVol = bars[bars.length - 1].vol;
     if (avg5 && todayVol) {
-      const vr = todayVol / avg5;
+      // 盘中量比按已开盘时长折算，消除"上午量比系统性低估"的偏差
+      const mins = tradedMinutes(q.time);
+      const intraday = mins >= 15 && mins < 240;
+      const vr = (intraday ? todayVol * 240 / mins : todayVol) / avg5;
       const vScore = q.pct >= 0 ? lin(vr, 0.6, 2.5) : 100 - lin(vr, 0.6, 2.5);
       const vTag = vr > 1.2 ? (q.pct >= 0 ? " 放量涨" : " 放量跌") : "";
-      rows.push({ name: "量比(5日)", read: fmt(vr) + "x" + vTag, score: vScore, w: 20 });
+      rows.push({ name: "量比(5日" + (intraday ? "·折算" : "") + ")", read: fmt(vr) + "x" + vTag, score: vScore, w: 20 });
     }
   } else if (bq) {
     const rs = q.pct - bq.pct;
@@ -673,12 +723,12 @@ const IDX_CANDS = ["sh000001", "sz399001", "sz399006", "sh000688", "sz399971", "
 
 // L3 实际联动匹配：在「全池+指数」内按30日相关性动态选前5只组成该票自己的联动篮子
 // 门槛：ρ>=0.30 且共同样本>=20个交易日，抑制短窗口虚假相关
-function linkedRows(sym) {
+function linkedTop(sym) {
   const bars = S.k[sym];
   if (!bars) return [];
   const myRets = rets(bars).slice(-30);
   if (myRets.length < 20) return [];
-  const universe = [...new Set([TARGET, ...PEERS.map(p => p.sym), ...WL.map(w => w.sym), ...IDX_CANDS])];
+  const universe = [...new Set([HOME, ...PEERS.map(p => p.sym), ...WL.map(w => w.sym), ...IDX_CANDS])];
   const cands = [];
   for (const o of universe) {
     if (o === sym || !S.k[o] || !S.q[o]) continue;
@@ -688,12 +738,21 @@ function linkedRows(sym) {
     if (c !== null && c >= 0.30) cands.push({ sym: o, c });
   }
   cands.sort((a, b) => b.c - a.c);
-  const top = cands.slice(0, 5);
+  return cands.slice(0, 5);
+}
+
+function linkedRows(sym) {
+  const top = linkedTop(sym);
   if (!top.length) return [];
   let ws = 0, ps = 0, up = 0;
-  for (const t of top) { const pq = S.q[t.sym]; ws += t.c; ps += t.c * pq.pct; if (pq.pct > 0) up++; }
+  for (const t of top) {
+    const pq = S.q[t.sym];
+    ws += t.c;
+    ps += t.c * pq.pct * 10 / limitFor(t.sym); // 跨市场pct归一化（30cm/20cm折算到10cm口径）
+    if (pq.pct > 0) up++;
+  }
   return [
-    { name: "联动组合(ρ加权)", read: signed(ps / ws, "%"), score: lin(ps / ws, -3, 3), w: 70 },
+    { name: "联动组合(ρ加权·归一)", read: signed(ps / ws, "%"), score: lin(ps / ws, -3, 3), w: 70 },
     { name: "联动票上涨占比", read: up + "/" + top.length, score: up / top.length * 100, w: 30 }
   ];
 }
@@ -724,12 +783,16 @@ function computeFactors() {
   const q = S.q[TARGET], bz = S.q[BENCH];
   const F = { l1: [], l2: [], l3: [], l4: [] };
 
-  // ---- L1 市场环境
+  // ---- L1 市场环境（基准指数随当前标的所属市场自动适配）
   const sh = S.q["sh000001"], cyb = S.q["sz399006"];
-  if (bz) F.l1.push({ name: "北证50", read: signed(bz.pct, "%"), score: lin(bz.pct, -2, 2), w: 40 });
-  if (sh) F.l1.push({ name: "上证指数", read: signed(sh.pct, "%"), score: lin(sh.pct, -1.5, 1.5), w: 25 });
-  if (cyb) F.l1.push({ name: "创业板指", read: signed(cyb.pct, "%"), score: lin(cyb.pct, -2.5, 2.5), w: 15 });
-  if (bz && sh) F.l1.push({ name: "北证-上证价差", read: signed(bz.pct - sh.pct, "pct"), score: lin(bz.pct - sh.pct, -1.5, 1.5), w: 20 });
+  const bnL1 = BENCH_NAME[BENCH] || "基准";
+  const spreadRef = BENCH === "sh000001" ? S.q["sz399001"] : sh;
+  const spreadName = BENCH === "sh000001" ? "深成指" : "上证";
+  if (bz) F.l1.push({ name: bnL1, read: signed(bz.pct, "%"), score: lin(bz.pct, -2, 2), w: 40 });
+  if (BENCH !== "sh000001" && sh) F.l1.push({ name: "上证指数", read: signed(sh.pct, "%"), score: lin(sh.pct, -1.5, 1.5), w: 25 });
+  else if (BENCH === "sh000001" && S.q["sz399001"]) F.l1.push({ name: "深证成指", read: signed(S.q["sz399001"].pct, "%"), score: lin(S.q["sz399001"].pct, -1.5, 1.5), w: 25 });
+  if (BENCH !== "sz399006" && cyb) F.l1.push({ name: "创业板指", read: signed(cyb.pct, "%"), score: lin(cyb.pct, -2.5, 2.5), w: 15 });
+  if (bz && spreadRef) F.l1.push({ name: bnL1 + "-" + spreadName + "价差", read: signed(bz.pct - spreadRef.pct, "pct"), score: lin(bz.pct - spreadRef.pct, -1.5, 1.5), w: 20 });
 
   // ---- L2 全球情绪
   const ixic = S.q["usIXIC"], inx = S.q["usINX"], hstech = S.q["hkHSTECH"];
@@ -739,20 +802,24 @@ function computeFactors() {
   if (S.global && S.global.N225) F.l2.push({ name: "日经225", read: signed(S.global.N225.pct, "%"), score: lin(S.global.N225.pct, -2, 2), w: 12.5 });
   if (S.global && S.global.KS11) F.l2.push({ name: "韩国KOSPI", read: signed(S.global.KS11.pct, "%"), score: lin(S.global.KS11.pct, -2, 2), w: 12.5 });
 
-  // ---- L3 板块联动
-  let wsum = 0, psum = 0, upCnt = 0, okCnt = 0;
-  for (const p of PEERS) {
-    const pq = S.q[p.sym];
-    if (pq && Number.isFinite(pq.pct)) { wsum += p.corr90; psum += p.corr90 * pq.pct; okCnt++; if (pq.pct > 0) upCnt++; }
+  // ---- L3 板块联动：主标的用精筛关联池，其他标的用30日实际联动自动匹配
+  if (TARGET === HOME) {
+    let wsum = 0, psum = 0, upCnt = 0, okCnt = 0;
+    for (const p of PEERS) {
+      const pq = S.q[p.sym];
+      if (pq && Number.isFinite(pq.pct)) { wsum += p.corr90; psum += p.corr90 * pq.pct * 10 / limitFor(p.sym); okCnt++; if (pq.pct > 0) upCnt++; }
+    }
+    if (okCnt) {
+      const basket = psum / wsum;
+      F.l3.push({ name: "关联组合(ρ加权·归一)", read: signed(basket, "%"), score: lin(basket, -3, 3), w: 45 });
+      F.l3.push({ name: "关联票上涨占比", read: upCnt + "/" + okCnt, score: upCnt / okCnt * 100, w: 15 });
+    }
+    const cm = S.q["sz399971"], kc = S.q["sh000688"];
+    if (cm) F.l3.push({ name: "中证传媒", read: signed(cm.pct, "%"), score: lin(cm.pct, -2.5, 2.5), w: 20 });
+    if (kc) F.l3.push({ name: "科创50", read: signed(kc.pct, "%"), score: lin(kc.pct, -2.5, 2.5), w: 20 });
+  } else {
+    F.l3 = linkedRows(TARGET);
   }
-  if (okCnt) {
-    const basket = psum / wsum;
-    F.l3.push({ name: "关联组合(ρ加权)", read: signed(basket, "%"), score: lin(basket, -3, 3), w: 45 });
-    F.l3.push({ name: "关联票上涨占比", read: upCnt + "/" + okCnt, score: upCnt / okCnt * 100, w: 15 });
-  }
-  const cm = S.q["sz399971"], kc = S.q["sh000688"];
-  if (cm) F.l3.push({ name: "中证传媒", read: signed(cm.pct, "%"), score: lin(cm.pct, -2.5, 2.5), w: 20 });
-  if (kc) F.l3.push({ name: "科创50", read: signed(kc.pct, "%"), score: lin(kc.pct, -2.5, 2.5), w: 20 });
 
   // ---- L4 个股动能（复用统一口径）
   F.l4 = l4Rows(TARGET, BENCH);
@@ -783,7 +850,7 @@ function computeVerdict(score, q, lv, pen) {
   const bz = S.q[BENCH];
   if (bz && bz.pct < -1.5 && band.key === "atk") {
     band = { key: "hold", name: "积极持有（受限）", pos: "40–60%", tone: "tone-hold" };
-    notes.push("北证50 大跌超1.5%，系统性风险日不给进攻档。");
+    notes.push((BENCH_NAME[BENCH] || "基准") + " 大跌超1.5%，系统性风险日不给进攻档。");
   }
   if (pen && pen.p > 0) {
     notes.push("软规则：日内跑输" + (BENCH_NAME[benchFor(TARGET)] || "基准") + " " + Math.abs(pen.rs).toFixed(1) + "pct，评分已下调 " + pen.p.toFixed(0) + " 分（环境强但个股滞涨，警惕背离）。");
@@ -795,6 +862,38 @@ function computeVerdict(score, q, lv, pen) {
     else notes.push("因子整体偏弱。以保住本金为先，反弹减磅优于低位补仓。");
   }
   return { ...band, note: notes.join(" ") };
+}
+
+/* ================= 评分历史（本机留痕） ================= */
+const HIST_KEY = "aa_hist_v1";
+function saveHist(sym, score, q) {
+  if (!Number.isFinite(score) || !q || !q.time || q.time.length < 8) return;
+  try {
+    const all = JSON.parse(localStorage.getItem(HIST_KEY)) || {};
+    const d = q.time.slice(0, 4) + "-" + q.time.slice(4, 6) + "-" + q.time.slice(6, 8);
+    const arr = all[sym] || [];
+    const rec = { d, s: +score.toFixed(1), p: q.price };
+    if (arr.length && arr[arr.length - 1].d === d) arr[arr.length - 1] = rec;
+    else arr.push(rec);
+    all[sym] = arr.slice(-60);
+    localStorage.setItem(HIST_KEY, JSON.stringify(all));
+  } catch (e) {}
+}
+function renderHist() {
+  let arr = [];
+  try { arr = (JSON.parse(localStorage.getItem(HIST_KEY)) || {})[TARGET] || []; } catch (e) {}
+  const pts = arr.slice(-20);
+  const svg = $("histSvg");
+  if (pts.length < 2) {
+    svg.innerHTML = "";
+    $("histNote").textContent = "评分历史随每日浏览在本机积累，次日起显示轨迹";
+    return;
+  }
+  const xs = 300 / (pts.length - 1);
+  const poly = pts.map((r, i) => (i * xs).toFixed(1) + "," + (38 - r.s / 100 * 36).toFixed(1)).join(" ");
+  const last = pts[pts.length - 1];
+  svg.innerHTML = `<line x1="0" y1="${38 - 55 / 100 * 36}" x2="300" y2="${38 - 55 / 100 * 36}" stroke="#e4e7ec" stroke-dasharray="4 3"/><polyline points="${poly}" fill="none" stroke="#102a43" stroke-width="2"/>`;
+  $("histNote").textContent = `近${pts.length}个交易日评分轨迹 ${pts[0].d.slice(5)}→${last.d.slice(5)}，最新 ${last.s.toFixed(0)} 分（虚线=55分持有线 · 本机记录）`;
 }
 
 /* ================= 渲染 ================= */
@@ -820,7 +919,12 @@ function render() {
 
   if (!q) { $("stamp").textContent = "行情连接失败，10秒后自动重试"; return; }
 
-  // 主报价
+  // 主报价（标的名称/市场标签随切换动态更新）
+  const wlItem = WL.find(w => w.sym === TARGET) || PEERS.find(p => p.sym === TARGET);
+  $("stockName").textContent = q.name || (wlItem ? wlItem.name : TARGET.slice(2));
+  $("stockMeta").textContent = TARGET.slice(2) + " · " + (MKT_NAME[TARGET.slice(0, 2)] || "") +
+    (TARGET === HOME ? " · 传媒/AI应用" : (wlItem && wlItem.tag ? " · " + wlItem.tag : ""));
+  $("homeBtn").style.display = TARGET === HOME ? "none" : "";
   $("price").textContent = fmt(q.price);
   $("price").className = "price " + toneCls(q.pct);
   $("change").textContent = signed(q.change) + "  " + signed(q.pct, "%");
@@ -855,18 +959,30 @@ function render() {
   $("l4rows").innerHTML = F.l4.map(rowHtml).join("") || "<p class='sub'>数据不可用</p>";
   $("l2note").textContent = S.health.em ? "" : "日韩指数源（东方财富）暂不可达，已按剩余因子重新加权。";
 
-  // L3 关联票表
+  // L3 表格：主标的显示精筛关联池；其他标的显示自动匹配的联动篮子
   const tRets = bars ? rets(bars) : null;
-  $("peerBody").innerHTML = PEERS.map(p => {
-    const pq = S.q[p.sym];
-    let c30 = "--";
-    if (tRets && S.k[p.sym]) {
-      const pr = rets(S.k[p.sym]);
-      const c = corr(tRets.slice(-30), pr.slice(-30));
-      if (c !== null) c30 = c.toFixed(2);
-    }
-    return `<tr><td class="n">${p.name}</td><td class="r">${pq ? fmt(pq.price) : "--"}</td><td class="r ${pq ? toneCls(pq.pct) : ""}">${pq ? signed(pq.pct, "%") : "--"}</td><td class="r">${p.corr90.toFixed(2)}</td><td class="r">${c30}</td></tr>`;
-  }).join("");
+  if (TARGET === HOME) {
+    $("l3sub").textContent = "高相关标的与板块代理 · 90日ρ为2026-08筛选基线，30日ρ实时滚动";
+    $("peerHead").innerHTML = '<tr><th>标的</th><th class="r">现价</th><th class="r">涨跌幅</th><th class="r">90日ρ</th><th class="r">30日ρ</th></tr>';
+    $("peerBody").innerHTML = PEERS.map(p => {
+      const pq = S.q[p.sym];
+      let c30 = "--";
+      if (tRets && S.k[p.sym]) {
+        const pr = rets(S.k[p.sym]);
+        const c = corr(tRets.slice(-30), pr.slice(-30));
+        if (c !== null) c30 = c.toFixed(2);
+      }
+      return `<tr><td class="n">${p.name}</td><td class="r">${pq ? fmt(pq.price) : "--"}</td><td class="r ${pq ? toneCls(pq.pct) : ""}">${pq ? signed(pq.pct, "%") : "--"}</td><td class="r">${p.corr90.toFixed(2)}</td><td class="r">${c30}</td></tr>`;
+    }).join("");
+  } else {
+    $("l3sub").textContent = "按30日实际联动自动匹配（股票池+指数锚点 · ρ≥0.30 · 样本≥20日）";
+    $("peerHead").innerHTML = '<tr><th>联动标的</th><th class="r">现价</th><th class="r">涨跌幅</th><th class="r">30日ρ</th></tr>';
+    const top = linkedTop(TARGET);
+    $("peerBody").innerHTML = top.length ? top.map(t => {
+      const tq = S.q[t.sym];
+      return `<tr><td class="n">${tq && tq.name ? tq.name : t.sym}</td><td class="r">${tq ? fmt(tq.price) : "--"}</td><td class="r ${tq ? toneCls(tq.pct) : ""}">${tq ? signed(tq.pct, "%") : "--"}</td><td class="r">${t.c.toFixed(2)}</td></tr>`;
+    }).join("") : '<tr><td class="n" colspan="4">暂无满足门槛的联动标的（等待K线数据或该票联动性弱）</td></tr>';
+  }
 
   // 自选观察表：任意列排序（默认评分降序），缺失值恒排最后
   const wRows = WL.map(w => {
@@ -898,13 +1014,20 @@ function render() {
     const aria = active ? (WSORT.dir === -1 ? "descending" : "ascending") : "none";
     return `<th class="r sortable${active ? " active" : ""}" tabindex="0" role="button" aria-sort="${aria}" title="点击按${label}排序" onclick="setSort('${k}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();setSort('${k}')}">${label}${arr}</th>`;
   }).join("") + '<th class="r"></th></tr>';
-  $("watchBody").innerHTML = wRows.map(r => {
+  const kwEl = $("wlFilter");
+  const kw = kwEl ? kwEl.value.trim().toLowerCase() : "";
+  const wShow = kw ? wRows.filter(r => {
+    const nm = ((r.wq && r.wq.name) || r.w.name || "").toLowerCase();
+    return nm.includes(kw) || (r.w.tag || "").toLowerCase().includes(kw) || r.w.sym.includes(kw);
+  }) : wRows;
+  $("watchBody").innerHTML = wShow.map(r => {
     const { w, wq, sc } = r;
     const scCls = !Number.isFinite(sc) ? "" : sc >= 70 ? "up" : sc < 40 ? "down" : "";
     const name = (wq && wq.name) ? wq.name : w.name;
+    const cur = w.sym === TARGET;
     const del = URL_MODE ? "" : `<button class="wl-del" onclick="removeStock('${w.sym}')" title="从列表删除">×</button>`;
-    return `<tr><td class="n">${name}</td><td class="n" style="color:#667085">${w.tag || ""}</td><td class="r ${scCls}" style="font-weight:700">${Number.isFinite(sc) ? sc.toFixed(0) : "--"}</td><td class="r">${wq ? fmt(wq.price) : "--"}</td><td class="r ${wq ? toneCls(wq.pct) : ""}">${wq ? signed(wq.pct, "%") : "--"}</td><td class="r">${wq ? fmt(wq.turnover) + "%" : "--"}</td><td class="r">${r.c30 === null ? "--" : r.c30.toFixed(2)}</td><td class="r">${del}</td></tr>`;
-  }).join("");
+    return `<tr><td class="n"><span class="wl-link${cur ? " cur" : ""}" role="button" tabindex="0" title="点击切换为分析标的" onclick="setTarget('${w.sym}')" onkeydown="if(event.key==='Enter')setTarget('${w.sym}')">${name}</span>${cur ? ' <span class="tag blue">分析中</span>' : ""}</td><td class="n" style="color:#667085">${w.tag || ""}</td><td class="r ${scCls}" style="font-weight:700">${Number.isFinite(sc) ? sc.toFixed(0) : "--"}</td><td class="r">${wq ? fmt(wq.price) : "--"}</td><td class="r ${wq ? toneCls(wq.pct) : ""}">${wq ? signed(wq.pct, "%") : "--"}</td><td class="r">${wq ? fmt(wq.turnover) + "%" : "--"}</td><td class="r">${r.c30 === null ? "--" : r.c30.toFixed(2)}</td><td class="r">${del}</td></tr>`;
+  }).join("") || '<tr><td class="n" colspan="8">无匹配结果</td></tr>';
 
   // 评分卡
   if (Number.isFinite(score)) {
@@ -915,7 +1038,9 @@ function render() {
     $("gaugeArc").setAttribute("stroke", score >= 70 ? "#d92d20" : score >= 55 ? "#b54708" : score >= 40 ? "#175cd3" : "#039855");
     $("verdict").className = "verdict " + v.tone;
     $("verdict").innerHTML = `<b>${v.name}</b><span class="pos">建议仓位 ${v.pos}</span><p>${v.note}</p>`;
+    saveHist(TARGET, score, q);
   }
+  renderHist();
 
   // 价格带
   $("levelMode").textContent = lv.mode + (lv.atr ? " · ATR14=" + lv.atr.toFixed(2) : "");
@@ -932,11 +1057,12 @@ function render() {
   $("nowLabel").textContent = "现 " + fmt(q.price);
   $("highLabel").textContent = "高 " + fmt(q.high);
   const bz = S.q[BENCH];
+  const bnR = BENCH_NAME[BENCH] || "基准";
   const relRows = [];
-  if (bz) relRows.push({ name: "北证50", read: signed(bz.pct, "%"), score: lin(bz.pct, -2, 2) });
-  if (bz) relRows.push({ name: "相对北证50", read: signed(q.pct - bz.pct, "pct"), score: lin(q.pct - bz.pct, -3, 3) });
+  if (bz) relRows.push({ name: bnR, read: signed(bz.pct, "%"), score: lin(bz.pct, -2, 2) });
+  if (bz) relRows.push({ name: "相对" + bnR, read: signed(q.pct - bz.pct, "pct"), score: lin(q.pct - bz.pct, -3, 3) });
   const cm2 = S.q["sz399971"];
-  if (cm2) relRows.push({ name: "相对中证传媒", read: signed(q.pct - cm2.pct, "pct"), score: lin(q.pct - cm2.pct, -3, 3) });
+  if (TARGET === HOME && cm2) relRows.push({ name: "相对中证传媒", read: signed(q.pct - cm2.pct, "pct"), score: lin(q.pct - cm2.pct, -3, 3) });
   $("relRows").innerHTML = relRows.map(rowHtml).join("");
 
   // 条件剧本
@@ -946,11 +1072,16 @@ function render() {
     const sup = list[Math.max(list.length - 2, 1)];
     const def = list[list.length - 1];
     const stopRef = lv.atr ? Math.max(def.p - 0.5 * lv.atr, q.price - 1.5 * lv.atr) : def.p;
+    // 高亮当前价格所处的剧本区间
+    let act = 3;
+    if (q.price >= atk.p) act = 0; else if (q.price >= sup.p) act = 1; else if (q.price >= def.p) act = 2;
+    const cur = i => act === i ? ' <span class="tag blue">当前</span>' : "";
+    const on = i => act === i ? ' class="on"' : "";
     $("playbook").innerHTML = `
-      <div><span class="tag red">进攻触发</span><b>放量站稳 ${atk.p.toFixed(2)}</b><p>${atk.l}位确认突破，目标看 ${top.p.toFixed(2)} 一带；执行进攻档仓位（60–80%），但不追瞬时脉冲，回踩不破再加。</p></div>
-      <div><span class="tag blue">健康回踩</span><b>回踩 ${sup.p.toFixed(2)} 有承接</b><p>${sup.l}附近缩量企稳属健康换手，持有档（40–60%）不动；重新放量上攻 ${atk.p.toFixed(2)} 视为二次确认。</p></div>
-      <div><span class="tag amber">降级信号</span><b>跌破 ${sup.p.toFixed(2)} 未失守 ${def.p.toFixed(2)}</b><p>由进攻转为区间震荡，降至观望档（20–40%），反弹至 ${sup.p.toFixed(2)} 上方无量则继续减。</p></div>
-      <div><span class="tag green">风险出清</span><b>有效失守 ${def.p.toFixed(2)}</b><p>趋势结构破坏，无条件降至防守档（0–20%）；参考离场线 ${fmt(stopRef)}（ATR缓冲），不做机械式低位补仓。</p></div>`;
+      <div${on(0)}><span class="tag red">进攻触发</span>${cur(0)}<b>放量站稳 ${atk.p.toFixed(2)}</b><p>${atk.l}位确认突破，目标看 ${top.p.toFixed(2)} 一带；执行进攻档仓位（60–80%），但不追瞬时脉冲，回踩不破再加。</p></div>
+      <div${on(1)}><span class="tag blue">健康回踩</span>${cur(1)}<b>回踩 ${sup.p.toFixed(2)} 有承接</b><p>${sup.l}附近缩量企稳属健康换手，持有档（40–60%）不动；重新放量上攻 ${atk.p.toFixed(2)} 视为二次确认。</p></div>
+      <div${on(2)}><span class="tag amber">降级信号</span>${cur(2)}<b>跌破 ${sup.p.toFixed(2)} 未失守 ${def.p.toFixed(2)}</b><p>由进攻转为区间震荡，降至观望档（20–40%），反弹至 ${sup.p.toFixed(2)} 上方无量则继续减。</p></div>
+      <div${on(3)}><span class="tag green">风险出清</span>${cur(3)}<b>有效失守 ${def.p.toFixed(2)}</b><p>趋势结构破坏，无条件降至防守档（0–20%）；参考离场线 ${fmt(stopRef)}（ATR缓冲），不做机械式低位补仓。</p></div>`;
   } else {
     $("playbook").innerHTML = "<p class='sub'>等待K线数据生成剧本…</p>";
   }
@@ -982,6 +1113,12 @@ function compute() { try { render(); } catch (e) { $("stamp").textContent = "渲
 /* ================= 启动 ================= */
 function refreshAll() { loadQuotes(); loadKlines(); loadGlobal(); }
 rebuildWL();
+// URL深度链接：?stock=002261 直接打开指定标的的分析视图
+const stockParam = new URLSearchParams(location.search).get("stock");
+if (stockParam) {
+  const sp = prefixSym(stockParam.trim());
+  if (sp) { TARGET = sp; BENCH = benchFor(sp); }
+}
 if (URL_MODE) {
   $("wlControls").innerHTML = `<span style="font-size:12px;color:#667085;align-self:center">正在查看分享列表（本机自选未受影响）</span><button class="wl-btn" onclick="exitShare()">返回我的列表</button>`;
 }
