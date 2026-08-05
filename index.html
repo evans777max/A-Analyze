@@ -267,7 +267,7 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
 
   <footer>
     综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v2.5
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v2.6
   </footer>
 </main>
 
@@ -508,7 +508,7 @@ async function fetchK(sym) {
 }
 
 async function loadKlines(only) {
-  const syms = Array.isArray(only) ? only : [TARGET, BENCH, ...PEERS.map(x => x.sym), ...WL.map(x => x.sym)];
+  const syms = Array.isArray(only) ? only : [...new Set([TARGET, BENCH, ...IDX_CANDS, ...PEERS.map(x => x.sym), ...WL.map(x => x.sym)])];
   S.kloading = true;
   let got = 0;
   const CHUNK = 5; // 每批5只并行，兼顾速度与限流
@@ -668,17 +668,24 @@ function l4Rows(sym, benchSym) {
   return rows;
 }
 
-// L3 实际联动匹配：在全池内按30日相关性动态选前5只(ρ>=0.25)组成该票自己的联动篮子
+// 联动匹配的指数候选：任何票（含偏题自选票）都能与大盘/板块指数建立真实联动锚点
+const IDX_CANDS = ["sh000001", "sz399001", "sz399006", "sh000688", "sz399971", "bj899050"];
+
+// L3 实际联动匹配：在「全池+指数」内按30日相关性动态选前5只组成该票自己的联动篮子
+// 门槛：ρ>=0.30 且共同样本>=20个交易日，抑制短窗口虚假相关
 function linkedRows(sym) {
   const bars = S.k[sym];
   if (!bars) return [];
   const myRets = rets(bars).slice(-30);
-  const universe = [TARGET, ...PEERS.map(p => p.sym), ...WL.map(w => w.sym)];
+  if (myRets.length < 20) return [];
+  const universe = [...new Set([TARGET, ...PEERS.map(p => p.sym), ...WL.map(w => w.sym), ...IDX_CANDS])];
   const cands = [];
   for (const o of universe) {
     if (o === sym || !S.k[o] || !S.q[o]) continue;
-    const c = corr(myRets, rets(S.k[o]).slice(-30));
-    if (c !== null && c >= 0.25) cands.push({ sym: o, c });
+    const or = rets(S.k[o]).slice(-30);
+    if (Math.min(myRets.length, or.length) < 20) continue;
+    const c = corr(myRets, or);
+    if (c !== null && c >= 0.30) cands.push({ sym: o, c });
   }
   cands.sort((a, b) => b.c - a.c);
   const top = cands.slice(0, 5);
