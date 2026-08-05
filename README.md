@@ -1,7 +1,7 @@
 # A-Analyze
 
 ![Live](https://img.shields.io/badge/Live-edgeone.cool-46d39a?style=flat-square)
-![Version](https://img.shields.io/badge/version-v3.0-102a43?style=flat-square)
+![Version](https://img.shields.io/badge/version-v3.1-102a43?style=flat-square)
 ![Single File](https://img.shields.io/badge/single--file-index.html-blue?style=flat-square)
 ![Zero Deps](https://img.shields.io/badge/dependencies-0-success?style=flat-square)
 ![Vanilla JS](https://img.shields.io/badge/vanilla-JS%2FCSS-f7df1e?style=flat-square)
@@ -53,6 +53,8 @@
 ## 多标的切换（v3.0）
 
 点击自选表中的股票名即可把全页分析（评分卡 / 关键价格带 / 条件剧本 / 四层因子 / 日内强弱）切换到该标的，秒切无需刷新；主标的流金科技保留精筛关联池，其他标的的 L3 面板自动展示其实际联动篮子。支持 `?stock=002261` 深度链接直达指定标的视图，与 `?list=` 可组合分享。
+
+v3.1：浅色/深色双主题——顶栏一键切换，偏好本机记忆，首次访问跟随系统外观；深色为近黑画布+高对比语义色，红涨绿跌约定不变，全部组件 token 化换肤，布局零改动。
 
 v3.0 其他增强：
 - 量比修正：盘中按已开盘时长折算，消除上午量比系统性低估（标注"折算"）

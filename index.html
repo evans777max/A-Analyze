@@ -7,13 +7,46 @@
 <meta name="description" content="A-Analyze 多因子综合分析：市场环境、全球情绪、板块联动、个股动能与仓位建议">
 <title>A-Analyze · 多因子综合看盘</title>
 <style>
-:root{--ink:#101828;--muted:#667085;--line:#e4e7ec;--paper:#fff;--wash:#f5f7fa;--red:#d92d20;--green:#039855;--navy:#102a43;--amber:#b54708;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+:root{
+  --ink:#101828;--ink2:#475467;--muted:#667085;--faint:#98a2b3;
+  --line:#e4e7ec;--line2:#f2f4f7;
+  --paper:#fff;--wash:#f5f7fa;--track:#edf0f4;
+  --navy:#102a43;--accent:#102a43;--bar-from:#9db4c9;
+  --topbar-ink:#fff;--topbar-dim:#d0d9e4;
+  --red:#d92d20;--green:#039855;--amber:#b54708;
+  --t-red-ink:#b42318;--t-red-bg:#fef3f2;
+  --t-amber-ink:#b54708;--t-amber-bg:#fffaeb;
+  --t-blue-ink:#175cd3;--t-blue-bg:#eff8ff;
+  --t-green-ink:#027a48;--t-green-bg:#ecfdf3;
+  --btn-line:#ccd4dd;--btn-ink:#344054;--btn-bg:#fff;--btn-hover:#f5f7fa;
+  --on-bg:#f5faff;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace
+}
+[data-theme="dark"]{
+  --ink:#ececef;--ink2:#b9b9c1;--muted:#8b8b96;--faint:#63636d;
+  --line:#2a2a32;--line2:#1f1f26;
+  --paper:#131316;--wash:#09090b;--track:#27272d;
+  --navy:#0f1216;--accent:#7dd3fc;--bar-from:#334155;
+  --topbar-ink:#ececef;--topbar-dim:#8b8b96;
+  --red:#fb7185;--green:#34d399;--amber:#fbbf24;
+  --t-red-ink:#fda4af;--t-red-bg:rgba(251,113,133,.14);
+  --t-amber-ink:#fcd34d;--t-amber-bg:rgba(251,191,36,.14);
+  --t-blue-ink:#7dd3fc;--t-blue-bg:rgba(56,189,248,.14);
+  --t-green-ink:#6ee7b7;--t-green-bg:rgba(52,211,153,.14);
+  --btn-line:#2a2a32;--btn-ink:#c6c6cd;--btn-bg:#1c1c21;--btn-hover:#27272d;
+  --on-bg:rgba(56,189,248,.07)
+}
 *{box-sizing:border-box}html{background:var(--wash)}
 body{margin:0;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--wash)}
-.topbar{height:54px;padding:0 max(20px,calc((100vw - 1180px)/2));display:flex;align-items:center;justify-content:space-between;color:#fff;background:var(--navy)}
+button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.topbar{height:54px;padding:0 max(20px,calc((100vw - 1180px)/2));display:flex;align-items:center;justify-content:space-between;color:var(--topbar-ink);background:var(--navy);border-bottom:1px solid rgba(255,255,255,.07)}
 .brand{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700}
 .dot{width:8px;height:8px;border-radius:50%;background:#46d39a;box-shadow:0 0 0 5px #46d39a20}
-.live{font-size:12px;color:#d0d9e4}
+.top-right{display:flex;align-items:center;gap:14px}
+.theme-btn{border:1px solid rgba(255,255,255,.25);background:transparent;color:var(--topbar-ink);padding:5px 11px;font-size:12px;cursor:pointer;transition:background .2s}
+.theme-btn:hover{background:rgba(255,255,255,.12)}
+.live{font-size:12px;color:var(--topbar-dim)}
 .live:before{content:"";display:inline-block;width:6px;height:6px;margin-right:7px;border-radius:50%;background:#43d391;animation:pulse 1.8s infinite}
 @keyframes pulse{50%{opacity:.35}}
 .shell{width:min(1180px,calc(100% - 32px));margin:auto;padding:20px 0 40px}
@@ -27,7 +60,7 @@ body{margin:0;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Seg
 /* 主区 */
 .hero{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;margin-top:14px}
 .card{background:var(--paper);border:1px solid var(--line);padding:22px 26px}
-.card.main{border-top:3px solid var(--navy)}
+.card.main{border-top:3px solid var(--accent)}
 .eyebrow{display:block;margin:0 0 8px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 h1{margin:0;font-size:26px}
 .quote{display:flex;align-items:flex-end;gap:18px;margin-top:14px}
@@ -42,34 +75,34 @@ h1{margin:0;font-size:26px}
 .gauge .num b{font:700 30px/1 var(--mono)}
 .gauge .num span{font-size:10px;color:var(--muted);margin-top:2px}
 .verdict b{display:block;font-size:22px}
-.verdict .pos{display:inline-block;margin-top:8px;padding:6px 10px;font:700 14px var(--mono);background:#f2f4f7}
-.verdict p{margin:10px 0 0;font-size:12px;line-height:1.7;color:#475467}
-.tone-atk b{color:var(--red)}.tone-atk .pos{color:#b42318;background:#fef3f2}
-.tone-hold b{color:#b54708}.tone-hold .pos{color:#b54708;background:#fffaeb}
-.tone-watch b{color:#175cd3}.tone-watch .pos{color:#175cd3;background:#eff8ff}
-.tone-def b{color:var(--green)}.tone-def .pos{color:#027a48;background:#ecfdf3}
+.verdict .pos{display:inline-block;margin-top:8px;padding:6px 10px;font:700 14px var(--mono);background:var(--line2)}
+.verdict p{margin:10px 0 0;font-size:12px;line-height:1.7;color:var(--ink2)}
+.tone-atk b{color:var(--red)}.tone-atk .pos{color:var(--t-red-ink);background:var(--t-red-bg)}
+.tone-hold b{color:var(--amber)}.tone-hold .pos{color:var(--t-amber-ink);background:var(--t-amber-bg)}
+.tone-watch b{color:var(--t-blue-ink)}.tone-watch .pos{color:var(--t-blue-ink);background:var(--t-blue-bg)}
+.tone-def b{color:var(--green)}.tone-def .pos{color:var(--t-green-ink);background:var(--t-green-bg)}
 /* 六格数据 */
-.stats{display:grid;grid-template-columns:repeat(6,1fr);background:#fff;border:1px solid var(--line);border-top:0}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);background:var(--paper);border:1px solid var(--line);border-top:0}
 .stats div{padding:14px 18px;border-right:1px solid var(--line)}
 .stats div:last-child{border-right:0}
 .stats span{display:block;color:var(--muted);font-size:11px}
 .stats b{display:block;margin-top:6px;font:650 15px/1 var(--mono)}
 /* 面板 */
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-.panel{padding:20px 22px;background:#fff;border:1px solid var(--line)}
+.panel{padding:20px 22px;background:var(--paper);border:1px solid var(--line)}
 .full{grid-column:1/-1}
 .panel h2{margin:0;font-size:16px}
 .panel .sub{margin:2px 0 0;font-size:11px;color:var(--muted)}
 .panel-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
 .lscore{font:700 18px var(--mono)}
-.frow{display:grid;grid-template-columns:110px 1fr 76px;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #f2f4f7;font-size:12px}
-.frow .bar{height:6px;background:#edf0f4;overflow:hidden}
-.frow .bar i{display:block;height:100%;background:linear-gradient(90deg,#9db4c9,var(--navy))}
+.frow{display:grid;grid-template-columns:110px 1fr 76px;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line2);font-size:12px}
+.frow .bar{height:6px;background:var(--track);overflow:hidden}
+.frow .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--bar-from),var(--accent))}
 .frow .val{text-align:right;font:650 12px var(--mono);white-space:nowrap}
 /* 表格 */
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{text-align:left;padding:8px 6px;color:var(--muted);font-weight:500;font-size:11px;border-bottom:1px solid var(--line)}
-td{padding:9px 6px;border-bottom:1px solid #f2f4f7;font-family:var(--mono)}
+td{padding:9px 6px;border-bottom:1px solid var(--line2);font-family:var(--mono)}
 td.n{font-family:inherit}
 th.r,td.r{text-align:right}
 /* 价格带 */
@@ -77,10 +110,10 @@ th.r,td.r{text-align:right}
 .level-price{font:700 15px var(--mono)}
 .level b{font-size:13px}
 .level p{margin:3px 0 0;color:var(--muted);font-size:11px}
-.badge{padding:4px 7px;color:#667085;background:#f2f4f7;font-size:10px;white-space:nowrap}
-.passed .badge{color:#b42318;background:#fef3f2}
-.track{height:9px;margin-top:8px;background:#edf0f4;overflow:hidden}
-.track i{display:block;width:50%;height:100%;background:linear-gradient(90deg,#9db4c9,var(--navy));transition:width .35s}
+.badge{padding:4px 7px;color:var(--muted);background:var(--line2);font-size:10px;white-space:nowrap}
+.passed .badge{color:var(--t-red-ink);background:var(--t-red-bg)}
+.track{height:9px;margin-top:8px;background:var(--track);overflow:hidden}
+.track i{display:block;width:50%;height:100%;background:linear-gradient(90deg,var(--bar-from),var(--accent));transition:width .35s}
 .range-labels{display:flex;justify-content:space-between;margin-top:8px;color:var(--muted);font:11px var(--mono)}
 /* 剧本 */
 .guidance{display:grid;grid-template-columns:repeat(4,1fr)}
@@ -89,8 +122,8 @@ th.r,td.r{text-align:right}
 .guidance b{display:block;margin:10px 0 6px;font-size:13px}
 .guidance p{margin:0;color:var(--muted);font-size:12px;line-height:1.65}
 .tag{padding:4px 7px;font-size:10px;font-weight:700}
-.green{color:#027a48;background:#ecfdf3}.blue{color:#175cd3;background:#eff8ff}.amber{color:#b54708;background:#fffaeb}.red{color:#b42318;background:#fef3f2}
-.srcnote{margin-top:10px;font-size:11px;color:#98a2b3}
+.green{color:var(--t-green-ink);background:var(--t-green-bg)}.blue{color:var(--t-blue-ink);background:var(--t-blue-bg)}.amber{color:var(--t-amber-ink);background:var(--t-amber-bg)}.red{color:var(--t-red-ink);background:var(--t-red-bg)}
+.srcnote{margin-top:10px;font-size:11px;color:var(--faint)}
 /* 表格横向滚动容器（窄屏防溢出） */
 .tbl-wrap{overflow-x:auto}
 /* 可排序列头 */
@@ -98,26 +131,26 @@ th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
 th.sortable:hover,th.sortable.active{color:var(--ink)}
 /* 自选管理 */
 .wl-controls{display:flex;gap:6px;flex-wrap:wrap}
-.wl-controls input{width:86px;padding:7px 9px;border:1px solid #ccd4dd;font:13px var(--mono)}
-.wl-btn{border:1px solid #ccd4dd;background:#fff;padding:7px 11px;color:#344054;font-size:12px;cursor:pointer;white-space:nowrap}
-.wl-btn:hover{background:#f5f7fa}
+.wl-controls input{width:86px;padding:7px 9px;border:1px solid var(--btn-line);font:13px var(--mono);background:var(--btn-bg);color:var(--ink)}
+.wl-btn{border:1px solid var(--btn-line);background:var(--btn-bg);padding:7px 11px;color:var(--btn-ink);font-size:12px;cursor:pointer;white-space:nowrap;transition:background .2s}
+.wl-btn:hover{background:var(--btn-hover)}
 .wl-msg{margin:0 0 8px;font-size:12px;color:var(--amber);min-height:14px}
-.wl-del{border:0;background:none;color:#98a2b3;font-size:14px;cursor:pointer;padding:2px 6px}
-.wl-del:hover{color:#b42318}
+.wl-del{border:0;background:none;color:var(--faint);font-size:14px;cursor:pointer;padding:2px 6px}
+.wl-del:hover{color:var(--t-red-ink)}
 /* 可点击切换的股票名 */
-.wl-link{cursor:pointer;border-bottom:1px dashed #b8c4d0}
-.wl-link:hover{color:var(--navy);border-bottom-color:var(--navy)}
-.wl-link.cur{color:#b42318;font-weight:700;border-bottom:0}
+.wl-link{cursor:pointer;border-bottom:1px dashed var(--faint)}
+.wl-link:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.wl-link.cur{color:var(--t-red-ink);font-weight:700;border-bottom:0}
 /* 剧本当前区间高亮 */
-.guidance>div.on{background:#f5faff}
+.guidance>div.on{background:var(--on-bg)}
 /* 评分历史 */
 .hist{margin-top:14px;padding-top:10px;border-top:1px solid var(--line)}
 /* 折叠归因 */
 .attr-details summary{display:flex;align-items:flex-start;justify-content:space-between;cursor:pointer;list-style:none}
 .attr-details summary::-webkit-details-marker{display:none}
-.attr-details .chev{color:#98a2b3;font-size:14px;transition:transform .2s}
+.attr-details .chev{color:var(--faint);font-size:14px;transition:transform .2s}
 .attr-details[open] .chev{transform:rotate(180deg)}
-footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-height:1.8}
+footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line-height:1.8}
 @media(max-width:860px){
 .topbar{padding:0 16px}.shell{width:calc(100% - 20px);padding-top:12px}
 .hero{grid-template-columns:1fr}.price{font-size:44px}
@@ -131,7 +164,10 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
 <body>
 <header class="topbar">
   <div class="brand"><i class="dot"></i>A-Analyze · 多因子综合看盘</div>
-  <div class="live" id="liveTag">10秒自动刷新</div>
+  <div class="top-right">
+    <span class="live" id="liveTag">10秒自动刷新</span>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="切换浅色/深色主题">深色</button>
+  </div>
 </header>
 <main class="shell">
 
@@ -151,8 +187,8 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
       <div class="score-wrap">
         <div class="gauge">
           <svg width="108" height="108" viewBox="0 0 108 108">
-            <circle cx="54" cy="54" r="46" fill="none" stroke="#edf0f4" stroke-width="9"/>
-            <circle id="gaugeArc" cx="54" cy="54" r="46" fill="none" stroke="#102a43" stroke-width="9" stroke-linecap="butt" stroke-dasharray="0 289"/>
+            <circle cx="54" cy="54" r="46" fill="none" style="stroke:var(--track)" stroke-width="9"/>
+            <circle id="gaugeArc" cx="54" cy="54" r="46" fill="none" style="stroke:var(--accent)" stroke-width="9" stroke-linecap="butt" stroke-dasharray="0 289"/>
           </svg>
           <div class="num"><b id="scoreNum">--</b><span>/ 100</span></div>
         </div>
@@ -254,7 +290,7 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
     <article class="panel full">
       <div class="panel-head">
         <div><h2>条件式剧本</h2><p class="sub">基于动态价格带自动生成 · 触发条件成立才执行对应动作</p></div>
-        <button onclick="refreshAll()" style="border:1px solid #ccd4dd;background:#fff;padding:8px 12px;color:#344054;cursor:pointer">立即刷新</button>
+        <button class="wl-btn" onclick="refreshAll()" style="padding:8px 12px">立即刷新</button>
       </div>
       <div class="guidance" id="playbook"></div>
     </article>
@@ -277,7 +313,7 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
 
   <footer>
     综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.0
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.1
   </footer>
 </main>
 
@@ -892,7 +928,7 @@ function renderHist() {
   const xs = 300 / (pts.length - 1);
   const poly = pts.map((r, i) => (i * xs).toFixed(1) + "," + (38 - r.s / 100 * 36).toFixed(1)).join(" ");
   const last = pts[pts.length - 1];
-  svg.innerHTML = `<line x1="0" y1="${38 - 55 / 100 * 36}" x2="300" y2="${38 - 55 / 100 * 36}" stroke="#e4e7ec" stroke-dasharray="4 3"/><polyline points="${poly}" fill="none" stroke="#102a43" stroke-width="2"/>`;
+  svg.innerHTML = `<line x1="0" y1="${38 - 55 / 100 * 36}" x2="300" y2="${38 - 55 / 100 * 36}" style="stroke:var(--line)" stroke-dasharray="4 3"/><polyline points="${poly}" fill="none" style="stroke:var(--accent)" stroke-width="2"/>`;
   $("histNote").textContent = `近${pts.length}个交易日评分轨迹 ${pts[0].d.slice(5)}→${last.d.slice(5)}，最新 ${last.s.toFixed(0)} 分（虚线=55分持有线 · 本机记录）`;
 }
 
@@ -1026,7 +1062,7 @@ function render() {
     const name = (wq && wq.name) ? wq.name : w.name;
     const cur = w.sym === TARGET;
     const del = URL_MODE ? "" : `<button class="wl-del" onclick="removeStock('${w.sym}')" title="从列表删除">×</button>`;
-    return `<tr><td class="n"><span class="wl-link${cur ? " cur" : ""}" role="button" tabindex="0" title="点击切换为分析标的" onclick="setTarget('${w.sym}')" onkeydown="if(event.key==='Enter')setTarget('${w.sym}')">${name}</span>${cur ? ' <span class="tag blue">分析中</span>' : ""}</td><td class="n" style="color:#667085">${w.tag || ""}</td><td class="r ${scCls}" style="font-weight:700">${Number.isFinite(sc) ? sc.toFixed(0) : "--"}</td><td class="r">${wq ? fmt(wq.price) : "--"}</td><td class="r ${wq ? toneCls(wq.pct) : ""}">${wq ? signed(wq.pct, "%") : "--"}</td><td class="r">${wq ? fmt(wq.turnover) + "%" : "--"}</td><td class="r">${r.c30 === null ? "--" : r.c30.toFixed(2)}</td><td class="r">${del}</td></tr>`;
+    return `<tr><td class="n"><span class="wl-link${cur ? " cur" : ""}" role="button" tabindex="0" title="点击切换为分析标的" onclick="setTarget('${w.sym}')" onkeydown="if(event.key==='Enter')setTarget('${w.sym}')">${name}</span>${cur ? ' <span class="tag blue">分析中</span>' : ""}</td><td class="n" style="color:var(--muted)">${w.tag || ""}</td><td class="r ${scCls}" style="font-weight:700">${Number.isFinite(sc) ? sc.toFixed(0) : "--"}</td><td class="r">${wq ? fmt(wq.price) : "--"}</td><td class="r ${wq ? toneCls(wq.pct) : ""}">${wq ? signed(wq.pct, "%") : "--"}</td><td class="r">${wq ? fmt(wq.turnover) + "%" : "--"}</td><td class="r">${r.c30 === null ? "--" : r.c30.toFixed(2)}</td><td class="r">${del}</td></tr>`;
   }).join("") || '<tr><td class="n" colspan="8">无匹配结果</td></tr>';
 
   // 评分卡
@@ -1035,7 +1071,7 @@ function render() {
     $("scoreNum").textContent = score.toFixed(0);
     const cir = 2 * Math.PI * 46;
     $("gaugeArc").setAttribute("stroke-dasharray", (score / 100 * cir).toFixed(1) + " " + cir.toFixed(1));
-    $("gaugeArc").setAttribute("stroke", score >= 70 ? "#d92d20" : score >= 55 ? "#b54708" : score >= 40 ? "#175cd3" : "#039855");
+    $("gaugeArc").style.stroke = score >= 70 ? "var(--red)" : score >= 55 ? "var(--t-amber-ink)" : score >= 40 ? "var(--t-blue-ink)" : "var(--green)";
     $("verdict").className = "verdict " + v.tone;
     $("verdict").innerHTML = `<b>${v.name}</b><span class="pos">建议仓位 ${v.pos}</span><p>${v.note}</p>`;
     saveHist(TARGET, score, q);
@@ -1110,6 +1146,29 @@ function render() {
 
 function compute() { try { render(); } catch (e) { $("stamp").textContent = "渲染异常：" + e.message; } }
 
+/* ================= 主题切换（浅色/深色，本机记忆，默认跟随系统） ================= */
+const THEME_KEY = "aa_theme_v1";
+function applyTheme(t) {
+  document.documentElement.setAttribute("data-theme", t);
+  const b = $("themeBtn");
+  if (b) b.textContent = t === "dark" ? "浅色" : "深色";
+  const mc = document.querySelector('meta[name="theme-color"]');
+  if (mc) mc.content = t === "dark" ? "#09090b" : "#102a43";
+}
+function toggleTheme() {
+  const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  applyTheme(next);
+}
+(function initTheme() {
+  let t = null;
+  try { t = localStorage.getItem(THEME_KEY); } catch (e) {}
+  if (t !== "dark" && t !== "light") {
+    t = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+  }
+  applyTheme(t);
+})();
+
 /* ================= 启动 ================= */
 function refreshAll() { loadQuotes(); loadKlines(); loadGlobal(); }
 rebuildWL();
@@ -1120,7 +1179,7 @@ if (stockParam) {
   if (sp) { TARGET = sp; BENCH = benchFor(sp); }
 }
 if (URL_MODE) {
-  $("wlControls").innerHTML = `<span style="font-size:12px;color:#667085;align-self:center">正在查看分享列表（本机自选未受影响）</span><button class="wl-btn" onclick="exitShare()">返回我的列表</button>`;
+  $("wlControls").innerHTML = `<span style="font-size:12px;color:var(--muted);align-self:center">正在查看分享列表（本机自选未受影响）</span><button class="wl-btn" onclick="exitShare()">返回我的列表</button>`;
 }
 loadQuotes(); loadKlines(); loadGlobal();
 setInterval(loadQuotes, CONFIG.QUOTE_MS);
