@@ -267,7 +267,7 @@ footer{padding:20px 2px;color:#98a2b3;font-size:11px;text-align:center;line-heig
 
   <footer>
     综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v2.6
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v2.7
   </footer>
 </main>
 
@@ -698,6 +698,17 @@ function linkedRows(sym) {
   ];
 }
 
+// 软规则：日内大幅跑输所属基准时额外压分（针对"环境强掩盖个股弱"的场景，
+// L4里的RS因子权重不足以对冲强环境层，此规则在极端背离时放大该信号）
+// 触发：RS < -1.5pct；扣分 = (|RS|-1.5)×10，封顶15分
+function rsPenalty(sym) {
+  const q = S.q[sym], bq = S.q[benchFor(sym)];
+  if (!q || !bq || !Number.isFinite(q.pct) || !Number.isFinite(bq.pct)) return { p: 0, rs: null };
+  const rs = q.pct - bq.pct;
+  if (rs >= -1.5) return { p: 0, rs };
+  return { p: Math.min(15, (Math.abs(rs) - 1.5) * 10), rs };
+}
+
 // 自选票综合评分：与本票同口径（L1/L2共享市场层，L3按实际联动匹配，L4逐票计算，缺失层重加权）
 function stockScore(sym, l1, l2) {
   const l3 = layerScore(linkedRows(sym));
@@ -705,7 +716,8 @@ function stockScore(sym, l1, l2) {
   const parts = [[l1, 20], [l2, 15], [l3, 25], [l4, 40]];
   let w = 0, s = 0;
   for (const [v, wt] of parts) if (Number.isFinite(v)) { w += wt; s += v * wt; }
-  return w ? s / w : null;
+  if (!w) return null;
+  return Math.max(0, s / w - rsPenalty(sym).p);
 }
 
 function computeFactors() {
@@ -754,7 +766,7 @@ function layerScore(rows) {
   return valid.reduce((s, r) => s + r.score * r.w, 0) / wsum;
 }
 
-function computeVerdict(score, q, lv) {
+function computeVerdict(score, q, lv, pen) {
   let band;
   if (score >= 70) band = { key: "atk", name: "进攻", pos: "60–80%", tone: "tone-atk" };
   else if (score >= 55) band = { key: "hold", name: "积极持有", pos: "40–60%", tone: "tone-hold" };
@@ -772,6 +784,9 @@ function computeVerdict(score, q, lv) {
   if (bz && bz.pct < -1.5 && band.key === "atk") {
     band = { key: "hold", name: "积极持有（受限）", pos: "40–60%", tone: "tone-hold" };
     notes.push("北证50 大跌超1.5%，系统性风险日不给进攻档。");
+  }
+  if (pen && pen.p > 0) {
+    notes.push("软规则：日内跑输" + (BENCH_NAME[benchFor(TARGET)] || "基准") + " " + Math.abs(pen.rs).toFixed(1) + "pct，评分已下调 " + pen.p.toFixed(0) + " 分（环境强但个股滞涨，警惕背离）。");
   }
   if (!notes.length) {
     if (band.key === "atk") notes.push("多层因子共振向好。分批参与，回踩承接区可加，勿追瞬时脉冲。");
@@ -828,7 +843,8 @@ function render() {
   for (const k of Object.keys(weights)) {
     if (Number.isFinite(L[k])) { wAvail += weights[k]; sSum += L[k] * weights[k]; }
   }
-  const score = wAvail ? sSum / wAvail : null;
+  const pen = rsPenalty(TARGET);
+  const score = wAvail ? Math.max(0, sSum / wAvail - pen.p) : null;
 
   ["l1", "l2", "l3", "l4"].forEach(k => {
     $(k + "score").textContent = Number.isFinite(L[k]) ? L[k].toFixed(0) : "--";
@@ -892,7 +908,7 @@ function render() {
 
   // 评分卡
   if (Number.isFinite(score)) {
-    const v = computeVerdict(score, q, lv);
+    const v = computeVerdict(score, q, lv, pen);
     $("scoreNum").textContent = score.toFixed(0);
     const cir = 2 * Math.PI * 46;
     $("gaugeArc").setAttribute("stroke-dasharray", (score / 100 * cir).toFixed(1) + " " + cir.toFixed(1));
@@ -949,6 +965,9 @@ function render() {
       const contrib = Number.isFinite(score) && wAvail ? (r.score * (r.w / wsum) * w / wAvail) : null;
       attrHtml += `<tr><td class="n">${lname}</td><td class="n">${r.name}</td><td class="r">${r.read}</td><td class="r">${r.score.toFixed(0)}</td><td class="r">${(r.w / wsum * 100).toFixed(0)}%</td><td class="r">${contrib !== null ? contrib.toFixed(1) : "--"}</td></tr>`;
     }
+  }
+  if (pen.p > 0) {
+    attrHtml += `<tr><td class="n">软规则</td><td class="n">相对强弱惩罚（跑输基准超1.5pct）</td><td class="r down">${signed(pen.rs, "pct")}</td><td class="r">—</td><td class="r">—</td><td class="r down">-${pen.p.toFixed(1)}</td></tr>`;
   }
   $("attrBody").innerHTML = attrHtml;
   const hs = [];

@@ -1,7 +1,7 @@
 # A-Analyze
 
 ![Live](https://img.shields.io/badge/Live-edgeone.cool-46d39a?style=flat-square)
-![Version](https://img.shields.io/badge/version-v2.6-102a43?style=flat-square)
+![Version](https://img.shields.io/badge/version-v2.7-102a43?style=flat-square)
 ![Single File](https://img.shields.io/badge/single--file-index.html-blue?style=flat-square)
 ![Zero Deps](https://img.shields.io/badge/dependencies-0-success?style=flat-square)
 ![Vanilla JS](https://img.shields.io/badge/vanilla-JS%2FCSS-f7df1e?style=flat-square)
@@ -25,6 +25,7 @@
 
 评分映射到四档仓位：进攻 60–80% / 积极持有 40–60% / 观望 20–40% / 防守 0–20%。
 两条硬规则优先于分数：跌破趋势防线强制防守档；北证50 单日大跌禁止进攻档。
+一条软规则（v2.7，全部标的统一生效）：日内跑输所属基准超 1.5pct 时额外压分——超出部分每 1pct 扣 10 分、封顶 15 分，用于对冲"环境强掩盖个股弱"的评分虚高；触发时在评分归因表和判定文字中透明展示。
 
 关键价格带默认自动推导（60日高 / 20日前高 / MA10-20 / 20日低 + ATR 去重），
 可在 `index.html` 顶部 `CONFIG.MANUAL_LEVELS` 手工覆盖。
