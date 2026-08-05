@@ -313,7 +313,7 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
 
   <footer>
     综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.1
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.2
   </footer>
 </main>
 
@@ -804,6 +804,22 @@ function rsPenalty(sym) {
   return { p: Math.min(15, (Math.abs(rs) - 1.5) * 10), rs };
 }
 
+// 软规则2：短期涨幅过热压分（垂直拉升末段追高风险），全部标的统一生效
+// 模型是动能共振评分器，会在最过热时刻打出最高分——此规则区分"健康趋势强势"与"垂直拉升末段"
+// 触发：2日累计涨幅 > 1.5×单日涨跌幅上限 或 5日累计 > 2×上限；超出部分递进扣分，封顶20
+function overheatPenalty(sym) {
+  const bars = liveBars(sym);
+  if (!bars || bars.length < 3) return { p: 0, r2: null, r5: null };
+  const c = bars.map(b => b.close);
+  const last = c[c.length - 1];
+  const lim = limitFor(sym);
+  const r2 = c.length >= 3 ? (last / c[c.length - 3] - 1) * 100 : null;
+  const r5 = c.length >= 6 ? (last / c[c.length - 6] - 1) * 100 : null;
+  const p2 = r2 !== null ? Math.max(0, (r2 - 1.5 * lim) / lim * 30) : 0;
+  const p5 = r5 !== null ? Math.max(0, (r5 - 2 * lim) / lim * 20) : 0;
+  return { p: Math.min(20, Math.max(p2, p5)), r2, r5 };
+}
+
 // 自选票综合评分：与本票同口径（L1/L2共享市场层，L3按实际联动匹配，L4逐票计算，缺失层重加权）
 function stockScore(sym, l1, l2) {
   const l3 = layerScore(linkedRows(sym));
@@ -812,7 +828,7 @@ function stockScore(sym, l1, l2) {
   let w = 0, s = 0;
   for (const [v, wt] of parts) if (Number.isFinite(v)) { w += wt; s += v * wt; }
   if (!w) return null;
-  return Math.max(0, s / w - rsPenalty(sym).p);
+  return Math.max(0, s / w - rsPenalty(sym).p - overheatPenalty(sym).p);
 }
 
 function computeFactors() {
@@ -869,7 +885,7 @@ function layerScore(rows) {
   return valid.reduce((s, r) => s + r.score * r.w, 0) / wsum;
 }
 
-function computeVerdict(score, q, lv, pen) {
+function computeVerdict(score, q, lv, pen, oh) {
   let band;
   if (score >= 70) band = { key: "atk", name: "进攻", pos: "60–80%", tone: "tone-atk" };
   else if (score >= 55) band = { key: "hold", name: "积极持有", pos: "40–60%", tone: "tone-hold" };
@@ -890,6 +906,9 @@ function computeVerdict(score, q, lv, pen) {
   }
   if (pen && pen.p > 0) {
     notes.push("软规则：日内跑输" + (BENCH_NAME[benchFor(TARGET)] || "基准") + " " + Math.abs(pen.rs).toFixed(1) + "pct，评分已下调 " + pen.p.toFixed(0) + " 分（环境强但个股滞涨，警惕背离）。");
+  }
+  if (oh && oh.p > 0) {
+    notes.push("过热警示：近2日累计 " + (oh.r2 !== null ? oh.r2.toFixed(0) : "--") + "%、近5日 " + (oh.r5 !== null ? oh.r5.toFixed(0) : "--") + "%，评分已下调 " + oh.p.toFixed(0) + " 分——垂直拉升末段追高风险大于动能信号本身。");
   }
   if (!notes.length) {
     if (band.key === "atk") notes.push("多层因子共振向好。分批参与，回踩承接区可加，勿追瞬时脉冲。");
@@ -984,7 +1003,8 @@ function render() {
     if (Number.isFinite(L[k])) { wAvail += weights[k]; sSum += L[k] * weights[k]; }
   }
   const pen = rsPenalty(TARGET);
-  const score = wAvail ? Math.max(0, sSum / wAvail - pen.p) : null;
+  const oh = overheatPenalty(TARGET);
+  const score = wAvail ? Math.max(0, sSum / wAvail - pen.p - oh.p) : null;
 
   ["l1", "l2", "l3", "l4"].forEach(k => {
     $(k + "score").textContent = Number.isFinite(L[k]) ? L[k].toFixed(0) : "--";
@@ -1029,7 +1049,8 @@ function render() {
       if (c !== null) c30 = c;
     }
     const sc = stockScore(w.sym, L.l1, L.l2);
-    return { w, wq, sc, c30, vals: {
+    const hot = overheatPenalty(w.sym).p > 0;
+    return { w, wq, sc, c30, hot, vals: {
       score: Number.isFinite(sc) ? sc : null,
       price: wq && Number.isFinite(wq.price) ? wq.price : null,
       pct: wq && Number.isFinite(wq.pct) ? wq.pct : null,
@@ -1062,12 +1083,12 @@ function render() {
     const name = (wq && wq.name) ? wq.name : w.name;
     const cur = w.sym === TARGET;
     const del = URL_MODE ? "" : `<button class="wl-del" onclick="removeStock('${w.sym}')" title="从列表删除">×</button>`;
-    return `<tr><td class="n"><span class="wl-link${cur ? " cur" : ""}" role="button" tabindex="0" title="点击切换为分析标的" onclick="setTarget('${w.sym}')" onkeydown="if(event.key==='Enter')setTarget('${w.sym}')">${name}</span>${cur ? ' <span class="tag blue">分析中</span>' : ""}</td><td class="n" style="color:var(--muted)">${w.tag || ""}</td><td class="r ${scCls}" style="font-weight:700">${Number.isFinite(sc) ? sc.toFixed(0) : "--"}</td><td class="r">${wq ? fmt(wq.price) : "--"}</td><td class="r ${wq ? toneCls(wq.pct) : ""}">${wq ? signed(wq.pct, "%") : "--"}</td><td class="r">${wq ? fmt(wq.turnover) + "%" : "--"}</td><td class="r">${r.c30 === null ? "--" : r.c30.toFixed(2)}</td><td class="r">${del}</td></tr>`;
+    return `<tr><td class="n"><span class="wl-link${cur ? " cur" : ""}" role="button" tabindex="0" title="点击切换为分析标的" onclick="setTarget('${w.sym}')" onkeydown="if(event.key==='Enter')setTarget('${w.sym}')">${name}</span>${cur ? ' <span class="tag blue">分析中</span>' : ""}</td><td class="n" style="color:var(--muted)">${w.tag || ""}</td><td class="r ${scCls}" style="font-weight:700">${Number.isFinite(sc) ? sc.toFixed(0) : "--"}${r.hot ? ' <span class="tag amber">过热</span>' : ""}</td><td class="r">${wq ? fmt(wq.price) : "--"}</td><td class="r ${wq ? toneCls(wq.pct) : ""}">${wq ? signed(wq.pct, "%") : "--"}</td><td class="r">${wq ? fmt(wq.turnover) + "%" : "--"}</td><td class="r">${r.c30 === null ? "--" : r.c30.toFixed(2)}</td><td class="r">${del}</td></tr>`;
   }).join("") || '<tr><td class="n" colspan="8">无匹配结果</td></tr>';
 
   // 评分卡
   if (Number.isFinite(score)) {
-    const v = computeVerdict(score, q, lv, pen);
+    const v = computeVerdict(score, q, lv, pen, oh);
     $("scoreNum").textContent = score.toFixed(0);
     const cir = 2 * Math.PI * 46;
     $("gaugeArc").setAttribute("stroke-dasharray", (score / 100 * cir).toFixed(1) + " " + cir.toFixed(1));
@@ -1135,6 +1156,9 @@ function render() {
   }
   if (pen.p > 0) {
     attrHtml += `<tr><td class="n">软规则</td><td class="n">相对强弱惩罚（跑输基准超1.5pct）</td><td class="r down">${signed(pen.rs, "pct")}</td><td class="r">—</td><td class="r">—</td><td class="r down">-${pen.p.toFixed(1)}</td></tr>`;
+  }
+  if (oh.p > 0) {
+    attrHtml += `<tr><td class="n">软规则</td><td class="n">过热惩罚（2日/5日累计涨幅超限）</td><td class="r down">2日${oh.r2 !== null ? oh.r2.toFixed(0) : "--"}% / 5日${oh.r5 !== null ? oh.r5.toFixed(0) : "--"}%</td><td class="r">—</td><td class="r">—</td><td class="r down">-${oh.p.toFixed(1)}</td></tr>`;
   }
   $("attrBody").innerHTML = attrHtml;
   const hs = [];
