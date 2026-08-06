@@ -1,7 +1,7 @@
 # A-Analyze
 
 ![Live](https://img.shields.io/badge/Live-edgeone.cool-46d39a?style=flat-square)
-![Version](https://img.shields.io/badge/version-v3.5-102a43?style=flat-square)
+![Version](https://img.shields.io/badge/version-v3.6-102a43?style=flat-square)
 ![Single File](https://img.shields.io/badge/single--file-index.html-blue?style=flat-square)
 ![Zero Deps](https://img.shields.io/badge/dependencies-0-success?style=flat-square)
 ![Vanilla JS](https://img.shields.io/badge/vanilla-JS%2FCSS-f7df1e?style=flat-square)
@@ -66,6 +66,12 @@ v3.0 其他增强：
 - 评分历史：每日评分自动留痕于本机，评分卡下方显示近 20 个交易日评分轨迹（55 分持有线为参照）
 - 跨市场归一化：联动篮子聚合时将 30cm/20cm 标的涨跌折算到 10cm 口径，消除北交所/双创票对篮子的过度牵引
 - 条件剧本高亮当前价格所处区间；自选表新增名称/题材/代码筛选框
+
+## 评分快照管线（v3.6）
+
+GitHub Actions 每个交易日北京时间 15:20 自动运行 `scripts/snapshot.mjs`：拉取全池收盘数据 → 按与页面完全同口径的模型计算每只票的收盘评分 → 追加写入 `data/history.json` 并提交。页面读取该文件作为评分历史基底（全端一致、不依赖用户开着页面），本机盘中实时点作为最新一天的补充。历史保留 250 个交易日。
+
+⚠️ 维护约定：`scripts/snapshot.mjs` 复刻了页面的评分模型，改 `index.html` 模型时必须同步修改该脚本（标的池与 corr90 基线已自动从 index.html 提取，无需双份维护）。
 
 ## 部署
 

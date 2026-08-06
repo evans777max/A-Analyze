@@ -316,7 +316,7 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
 
   <footer>
     综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.5
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.6
   </footer>
 </main>
 
@@ -1006,9 +1006,24 @@ function saveHist(sym, score, q) {
     localStorage.setItem(HIST_KEY, JSON.stringify(all));
   } catch (e) {}
 }
+// 云端评分历史（Actions 每日收盘快照写入 data/history.json，全端一致）
+async function loadHistFile() {
+  try {
+    const r = await fetch("data/history.json?t=" + Date.now(), { cache: "no-store" });
+    if (r.ok) S.sharedHist = await r.json();
+  } catch (e) {}
+  compute();
+}
+
 function renderHist() {
-  let arr = [];
-  try { arr = (JSON.parse(localStorage.getItem(HIST_KEY)) || {})[TARGET] || []; } catch (e) {}
+  // 合并：云端快照为基底（完整、全端一致），本机当日实时点补最新
+  let localArr = [];
+  try { localArr = (JSON.parse(localStorage.getItem(HIST_KEY)) || {})[TARGET] || []; } catch (e) {}
+  const shared = (S.sharedHist && S.sharedHist[TARGET]) || [];
+  const map = new Map();
+  for (const r of shared) map.set(r.d, r);
+  for (const r of localArr) if (!map.has(r.d)) map.set(r.d, r);
+  const arr = [...map.values()].sort((a, b) => (a.d < b.d ? -1 : 1));
   const pts = arr.slice(-20);
   const svg = $("histSvg");
   if (pts.length < 2) {
@@ -1020,7 +1035,7 @@ function renderHist() {
   const poly = pts.map((r, i) => (i * xs).toFixed(1) + "," + (38 - r.s / 100 * 36).toFixed(1)).join(" ");
   const last = pts[pts.length - 1];
   svg.innerHTML = `<line x1="0" y1="${38 - 55 / 100 * 36}" x2="300" y2="${38 - 55 / 100 * 36}" style="stroke:var(--line)" stroke-dasharray="4 3"/><polyline points="${poly}" fill="none" style="stroke:var(--accent)" stroke-width="2"/>`;
-  $("histNote").textContent = `近${pts.length}个交易日评分轨迹 ${pts[0].d.slice(5)}→${last.d.slice(5)}，最新 ${last.s.toFixed(0)} 分（虚线=55分持有线 · 本机记录）`;
+  $("histNote").textContent = `近${pts.length}个交易日评分轨迹 ${pts[0].d.slice(5)}→${last.d.slice(5)}，最新 ${last.s.toFixed(0)} 分（虚线=55分持有线 · ${S.sharedHist ? "云端快照+本机实时" : "本机记录"}）`;
 }
 
 /* ================= 渲染 ================= */
@@ -1301,6 +1316,7 @@ if (URL_MODE) {
   $("wlControls").innerHTML = `<span style="font-size:12px;color:var(--muted);align-self:center">正在查看分享列表（本机自选未受影响）</span><button class="wl-btn" onclick="exitShare()">返回我的列表</button>`;
 }
 loadQuotes(); loadKlines(); loadGlobal(); loadMinute();
+loadHistFile();
 setInterval(loadQuotes, CONFIG.QUOTE_MS);
 setInterval(loadKlines, CONFIG.KLINE_MS);
 setInterval(loadGlobal, CONFIG.GLOBAL_MS);
