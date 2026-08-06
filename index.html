@@ -279,6 +279,7 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
           <button class="wl-btn" onclick="shareList()">分享列表</button>
         </div>
       </div>
+      <p class="sub" id="envHint" style="margin:0 0 6px"></p>
       <p class="wl-msg" id="wlMsg"></p>
       <div class="tbl-wrap"><table>
         <thead id="watchHead"></thead>
@@ -313,7 +314,7 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
 
   <footer>
     综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.2
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.3
   </footer>
 </main>
 
@@ -1038,6 +1039,15 @@ function render() {
       const tq = S.q[t.sym];
       return `<tr><td class="n">${tq && tq.name ? tq.name : t.sym}</td><td class="r">${tq ? fmt(tq.price) : "--"}</td><td class="r ${tq ? toneCls(tq.pct) : ""}">${tq ? signed(tq.pct, "%") : "--"}</td><td class="r">${t.c.toFixed(2)}</td></tr>`;
     }).join("") : '<tr><td class="n" colspan="4">暂无满足门槛的联动标的（等待K线数据或该票联动性弱）</td></tr>';
+  }
+
+  // 环境水位提示：L1/L2 为全场共享层，偏离中性时说明评分的系统性偏移，区分"环境弱"与"个股弱"
+  const envDrag = (Number.isFinite(L.l1) ? (L.l1 - 50) * 0.20 : 0) + (Number.isFinite(L.l2) ? (L.l2 - 50) * 0.15 : 0);
+  const eh = $("envHint");
+  if (eh) {
+    if (envDrag <= -4) eh.textContent = "环境提示：今日全球/大盘环境层偏弱，全场评分被系统性拖低约 " + Math.abs(envDrag).toFixed(0) + " 分——低分主因是环境水位而非个股全面恶化，相对强弱看排序。";
+    else if (envDrag >= 4) eh.textContent = "环境提示：今日环境层偏强，全场评分被系统性抬高约 " + envDrag.toFixed(0) + " 分——高分含环境红利，个股真实成色看 L4 与联动。";
+    else eh.textContent = "";
   }
 
   // 自选观察表：任意列排序（默认评分降序），缺失值恒排最后
