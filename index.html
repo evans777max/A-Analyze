@@ -181,6 +181,8 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
       <h1><span id="stockName">流金科技</span> <button id="homeBtn" class="wl-btn" style="display:none;vertical-align:middle;margin-left:8px" onclick="goHome()">返回流金科技</button></h1>
       <div class="quote"><strong class="price" id="price">--</strong><span class="change" id="change">--</span></div>
       <p class="stamp" id="stamp">正在连接行情源…</p>
+      <svg id="minuteSvg" width="100%" height="56" viewBox="0 0 300 56" preserveAspectRatio="none" style="margin-top:10px;display:block"></svg>
+      <p class="stamp" id="valuation" style="margin-top:6px"></p>
     </div>
     <div class="card" id="scoreCard">
       <span class="eyebrow">综合评分 · 四层因子模型</span>
@@ -243,7 +245,7 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
     <!-- L4 个股动能 -->
     <article class="panel">
       <div class="panel-head">
-        <div><h2>个股动能 <small style="color:#98a2b3;font-size:11px">L4 · 权重40%</small></h2><p class="sub">均线结构 · 相对强弱 · 量能 · 20日位置</p></div>
+        <div><h2>个股动能 <small style="color:#98a2b3;font-size:11px">L4 · 权重40%</small></h2><p class="sub">均线结构 · 相对强弱（日内+5日趋势）· 量能 · 20日位置</p></div>
         <span class="lscore" id="l4score">--</span>
       </div>
       <div id="l4rows"></div>
@@ -314,7 +316,7 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
 
   <footer>
     综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.3
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.4
   </footer>
 </main>
 
@@ -327,7 +329,8 @@ const CONFIG = {
   MANUAL_LEVELS: null,
   QUOTE_MS: 10000,      // 实时报价刷新
   KLINE_MS: 600000,     // K线刷新（10分钟）
-  GLOBAL_MS: 60000      // 日韩指数刷新
+  GLOBAL_MS: 60000,     // 日韩指数刷新
+  MINUTE_MS: 60000      // 当日分时刷新
 };
 
 // 关联票（2026-08 用90日收益率相关性离线筛选，corr90为筛选时点值，30日ρ由页面实时计算）
@@ -495,6 +498,7 @@ function setTarget(sym) {
   BENCH = benchFor(sym);
   if (!S.k[sym]) loadKlines([sym]);
   loadQuotes();
+  loadMinute();
   compute();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -555,7 +559,11 @@ function parseQt(raw) {
   return {
     name: f[1], price: +f[3], prev: +f[4], open: +f[5], time: f[30],
     change: +f[31], pct: +f[32], high: +f[33], low: +f[34],
-    amount: +f[37], turnover: +f[38]
+    amount: +f[37], turnover: +f[38],
+    // 扩展字段：内外盘与估值背景（指数无意义，展示前须校验）
+    outer: +f[7], inner: +f[8],
+    pe: +f[39], flowCap: +f[44], totalCap: +f[45], pb: +f[46],
+    upLim: +f[47], dnLim: +f[48]
   };
 }
 
@@ -602,6 +610,41 @@ async function loadKlines(only) {
   if (!Array.isArray(only)) S.health.sina = got > 0;
   else if (got > 0) S.health.sina = true;
   compute();
+}
+
+// 当日分时（腾讯分钟接口，仅当前分析标的）
+async function loadMinute() {
+  const sym = TARGET;
+  const v = "min_" + sym;
+  const ok = await jsonp("https://web.ifzq.gtimg.cn/appstock/app/minute/query?_var=" + v + "&code=" + sym, { timeout: 8000 });
+  try {
+    const d = ok && window[v] && window[v].data && window[v].data[sym] && window[v].data[sym].data;
+    if (d && Array.isArray(d.data) && d.data.length > 1) {
+      S.minute = { sym, date: d.date, pts: d.data.map(s => +s.split(" ")[1]).filter(Number.isFinite) };
+    } else if (S.minute && S.minute.sym === sym) S.minute = null;
+  } catch (e) { S.minute = null; }
+  compute();
+}
+
+function renderMinute(q) {
+  const svg = $("minuteSvg");
+  if (!svg) return;
+  const M = S.minute;
+  if (!M || M.sym !== TARGET || !q || !M.pts || M.pts.length < 2) { svg.innerHTML = ""; return; }
+  const pts = M.pts;
+  let lo = Math.min(...pts), hi = Math.max(...pts);
+  if (Number.isFinite(q.prev) && q.prev > 0) { lo = Math.min(lo, q.prev); hi = Math.max(hi, q.prev); }
+  if (hi <= lo) hi = lo * 1.001;
+  const pad = (hi - lo) * 0.08; lo -= pad; hi += pad;
+  const X = i => (i / 240 * 300).toFixed(1);  // 以全天240分钟定宽，盘中线随时间推进
+  const Y = p => (54 - (p - lo) / (hi - lo) * 50).toFixed(1);
+  const col = q.pct > 0 ? "var(--red)" : q.pct < 0 ? "var(--green)" : "var(--muted)";
+  let html = "";
+  if (Number.isFinite(q.prev) && q.prev > 0) {
+    html += `<line x1="0" y1="${Y(q.prev)}" x2="300" y2="${Y(q.prev)}" style="stroke:var(--line)" stroke-dasharray="4 3"/>`;
+  }
+  html += `<polyline points="${pts.map((p, i) => X(i) + "," + Y(p)).join(" ")}" fill="none" style="stroke:${col}" stroke-width="1.6"/>`;
+  svg.innerHTML = html;
 }
 
 async function loadGlobal() {
@@ -725,6 +768,13 @@ function l4Rows(sym, benchSym) {
     if (bq) {
       const rs = q.pct - bq.pct;
       rows.push({ name: "vs" + bn + "(日内)", read: signed(rs, "pct"), score: lin(rs, -3, 3), w: 20 });
+    }
+    // RS趋势：近5日累计相对基准收益，捕捉"连续跑输/跑赢"的持续性（单日RS看不见的信息）
+    const bBars = liveBars(benchSym);
+    if (bq && bBars && bars.length >= 6 && bBars.length >= 6) {
+      const cs = bars.map(b => b.close), cb = bBars.map(b => b.close);
+      const rs5 = ((cs[cs.length - 1] / cs[cs.length - 6] - 1) - (cb[cb.length - 1] / cb[cb.length - 6] - 1)) * 100;
+      rows.push({ name: "RS趋势(5日)", read: signed(rs5, "pct"), score: lin(rs5, -6, 6), w: 20 });
     }
     const prev20 = bars.slice(0, -1).slice(-20);
     const h20 = Math.max(...prev20.map(b => b.high)), l20 = Math.min(...prev20.map(b => b.low));
@@ -986,6 +1036,15 @@ function render() {
   $("change").textContent = signed(q.change) + "  " + signed(q.pct, "%");
   $("change").className = "change " + toneCls(q.pct);
   $("stamp").textContent = "行情时间 " + q.time + " · 腾讯实时源";
+  // 估值背景（仅展示，不入评分）
+  const valBits = [];
+  if (Number.isFinite(q.pe) && q.pe > 0) valBits.push("PE(TTM) " + q.pe.toFixed(1));
+  if (Number.isFinite(q.pb) && q.pb > 0) valBits.push("PB " + q.pb.toFixed(2));
+  if (Number.isFinite(q.totalCap) && q.totalCap > 0) valBits.push("总市值 " + q.totalCap.toFixed(1) + "亿");
+  if (Number.isFinite(q.flowCap) && q.flowCap > 0) valBits.push("流通 " + q.flowCap.toFixed(1) + "亿");
+  if (Number.isFinite(q.upLim) && q.upLim > 0 && Number.isFinite(q.dnLim) && q.dnLim > 0) valBits.push("涨/跌停 " + fmt(q.upLim) + "/" + fmt(q.dnLim));
+  $("valuation").textContent = valBits.length ? "估值背景：" + valBits.join(" · ") + "（仅展示，不入评分）" : "";
+  renderMinute(q);
   ["open", "high", "low", "prev"].forEach(k => $(k).textContent = fmt(q[k]));
   $("amount").textContent = fmt(q.amount / 10000) + "亿";
   $("turnover").textContent = fmt(q.turnover) + "%";
@@ -1130,6 +1189,11 @@ function render() {
   if (bz) relRows.push({ name: "相对" + bnR, read: signed(q.pct - bz.pct, "pct"), score: lin(q.pct - bz.pct, -3, 3) });
   const cm2 = S.q["sz399971"];
   if (TARGET === HOME && cm2) relRows.push({ name: "相对中证传媒", read: signed(q.pct - cm2.pct, "pct"), score: lin(q.pct - cm2.pct, -3, 3) });
+  // 内外盘：主动买盘占比（外盘=主动买、内盘=主动卖）
+  if (Number.isFinite(q.outer) && Number.isFinite(q.inner) && (q.outer + q.inner) > 0) {
+    const br = q.outer / (q.outer + q.inner) * 100;
+    relRows.push({ name: "主动买盘占比", read: fmt(br, 0) + "%", score: br });
+  }
   $("relRows").innerHTML = relRows.map(rowHtml).join("");
 
   // 条件剧本
@@ -1204,7 +1268,7 @@ function toggleTheme() {
 })();
 
 /* ================= 启动 ================= */
-function refreshAll() { loadQuotes(); loadKlines(); loadGlobal(); }
+function refreshAll() { loadQuotes(); loadKlines(); loadGlobal(); loadMinute(); }
 rebuildWL();
 // URL深度链接：?stock=002261 直接打开指定标的的分析视图
 const stockParam = new URLSearchParams(location.search).get("stock");
@@ -1215,10 +1279,11 @@ if (stockParam) {
 if (URL_MODE) {
   $("wlControls").innerHTML = `<span style="font-size:12px;color:var(--muted);align-self:center">正在查看分享列表（本机自选未受影响）</span><button class="wl-btn" onclick="exitShare()">返回我的列表</button>`;
 }
-loadQuotes(); loadKlines(); loadGlobal();
+loadQuotes(); loadKlines(); loadGlobal(); loadMinute();
 setInterval(loadQuotes, CONFIG.QUOTE_MS);
 setInterval(loadKlines, CONFIG.KLINE_MS);
 setInterval(loadGlobal, CONFIG.GLOBAL_MS);
+setInterval(loadMinute, CONFIG.MINUTE_MS);
 </script>
 </body>
 </html>
