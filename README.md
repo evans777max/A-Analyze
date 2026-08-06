@@ -1,7 +1,7 @@
 # A-Analyze
 
 ![Live](https://img.shields.io/badge/Live-edgeone.cool-46d39a?style=flat-square)
-![Version](https://img.shields.io/badge/version-v3.4-102a43?style=flat-square)
+![Version](https://img.shields.io/badge/version-v3.5-102a43?style=flat-square)
 ![Single File](https://img.shields.io/badge/single--file-index.html-blue?style=flat-square)
 ![Zero Deps](https://img.shields.io/badge/dependencies-0-success?style=flat-square)
 ![Vanilla JS](https://img.shields.io/badge/vanilla-JS%2FCSS-f7df1e?style=flat-square)
@@ -47,7 +47,8 @@
 纯静态单文件，无构建、无后端、无密钥。浏览器端直连三个公开行情源：
 
 - 腾讯 `qt.gtimg.cn`：实时报价（10 秒刷新）
-- 新浪 `quotes.sina.cn`：90 天日K（10 分钟刷新，含北交所）
+- 新浪 `quotes.sina.cn`：90 天日K（10 分钟刷新，含北交所）；失效时自动切换东财 `push2his` 备源（v3.5）
+- 腾讯 `web.ifzq.gtimg.cn`：当日分时（60 秒刷新）
 - 东方财富 `push2.eastmoney.com`：日经 / KOSPI（60 秒刷新，不可达时自动降级重加权）
 
 任一数据源失效不影响其余因子，评分自动按可用因子重新加权，页面底部有数据源健康状态。

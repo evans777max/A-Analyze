@@ -1,0 +1,23 @@
+name: probe-market-apis
+on: workflow_dispatch
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: probe qt.gtimg.cn
+        run: |
+          echo "=== TENCENT QT ==="
+          curl -s --max-time 15 "https://qt.gtimg.cn/q=bj920021" -o qt.txt && head -c 200 qt.txt || echo "QT-FAIL"
+          echo ""
+      - name: probe sina kline
+        run: |
+          echo "=== SINA KLINE ==="
+          curl -s --max-time 15 "https://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol=bj920021&scale=240&ma=no&datalen=3" -o sina.txt && head -c 200 sina.txt || echo "SINA-FAIL"
+          echo ""
+      - name: probe eastmoney kline
+        run: |
+          echo "=== EASTMONEY ==="
+          curl -s --max-time 15 "https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=0.920021&fields1=f1&fields2=f51,f53&klt=101&fqt=1&end=20500101&lmt=3" -o em.txt && head -c 200 em.txt || echo "EM-FAIL"
+          echo ""

@@ -316,7 +316,7 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
 
   <footer>
     综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.4
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.5
   </footer>
 </main>
 
@@ -582,6 +582,27 @@ async function loadQuotes() {
   compute();
 }
 
+// 日K备源：东方财富（新浪失效时自动切换；部分网络对东财不通，作为fallback聊胜于无）
+async function fetchKEm(sym) {
+  const code = sym.slice(2);
+  const secid = (sym.startsWith("sh") ? "1." : "0.") + code;
+  const cb = "__emk_" + sym;
+  window[cb + "_d"] = null;
+  window[cb] = d => { window[cb + "_d"] = d; };
+  const url = "https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=" + secid +
+    "&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56&klt=101&fqt=1&end=20500101&lmt=90&cb=" + cb;
+  const ok = await jsonp(url, { timeout: 8000 });
+  const d = ok && window[cb + "_d"] && window[cb + "_d"].data && window[cb + "_d"].data.klines;
+  if (d && d.length > 10) {
+    S.k[sym] = d.map(l => {
+      const p = l.split(",");
+      return { day: p[0], open: +p[1], close: +p[2], high: +p[3], low: +p[4], vol: +p[5] };
+    });
+    return true;
+  }
+  return false;
+}
+
 async function fetchK(sym) {
   const v = "_k" + sym;
   const url = "https://quotes.sina.cn/cn/api/jsonp_v2.php/var%20" + v +
@@ -593,7 +614,7 @@ async function fetchK(sym) {
     }));
     return true;
   }
-  return false;
+  return fetchKEm(sym); // 新浪失败→东财备源
 }
 
 async function loadKlines(only) {
@@ -1237,7 +1258,7 @@ function render() {
   $("attrBody").innerHTML = attrHtml;
   const hs = [];
   hs.push("腾讯行情 " + (S.health.tencent ? "正常" : "异常"));
-  hs.push("新浪K线 " + (S.kloading ? "加载中…" : (S.health.sina ? "正常" : "异常")));
+  hs.push("日K数据(新浪+东财备源) " + (S.kloading ? "加载中…" : (S.health.sina ? "正常" : "异常")));
   hs.push("日韩指数 " + (S.health.em ? "正常" : "降级"));
   $("healthNote").textContent = "数据源状态：" + hs.join(" · ") + " · 缺失源自动重新加权，不影响其余因子。";
 }
