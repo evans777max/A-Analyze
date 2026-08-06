@@ -1,7 +1,7 @@
 # A-Analyze
 
 ![Live](https://img.shields.io/badge/Live-edgeone.cool-46d39a?style=flat-square)
-![Version](https://img.shields.io/badge/version-v3.6-102a43?style=flat-square)
+![Version](https://img.shields.io/badge/version-v3.7-102a43?style=flat-square)
 ![Single File](https://img.shields.io/badge/single--file-index.html-blue?style=flat-square)
 ![Zero Deps](https://img.shields.io/badge/dependencies-0-success?style=flat-square)
 ![Vanilla JS](https://img.shields.io/badge/vanilla-JS%2FCSS-f7df1e?style=flat-square)
@@ -66,6 +66,11 @@ v3.0 其他增强：
 - 评分历史：每日评分自动留痕于本机，评分卡下方显示近 20 个交易日评分轨迹（55 分持有线为参照）
 - 跨市场归一化：联动篮子聚合时将 30cm/20cm 标的涨跌折算到 10cm 口径，消除北交所/双创票对篮子的过度牵引
 - 条件剧本高亮当前价格所处区间；自选表新增名称/题材/代码筛选框
+
+## 主线状态机与跨市场传导（v3.7，思路借鉴 [ai-chain-quant-global](https://github.com/evans777max/ai-chain-quant-global)）
+
+- **主线状态机**：指数带首位显示当日市场四态判定——强攻 / 轮动 / 分歧 / 退潮，输入为境内环境(L1)、全球情绪(L2)、自选池上涨宽度，判定条件透明展示；
+- **跨市场传导**：美股 AI 锚（英伟达/AMD/台积电/微软）隔夜异动超 ±1.5% 时，L2 面板按题材标签给出池内映射提示（如"英伟达 +3.4% → 利好映射：中际旭创、新易盛、工业富联…"）。
 
 ## 评分快照管线（v3.6）
 

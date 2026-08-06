@@ -141,6 +141,10 @@ th.sortable:hover,th.sortable.active{color:var(--ink)}
 .wl-link{cursor:pointer;border-bottom:1px dashed var(--faint)}
 .wl-link:hover{color:var(--accent);border-bottom-color:var(--accent)}
 .wl-link.cur{color:var(--t-red-ink);font-weight:700;border-bottom:0}
+/* 主线状态芯片 */
+.chip.regime{border-left:3px solid var(--accent)}
+.chip.regime i{display:block;margin:3px 0 0;font-size:10px;color:var(--muted)}
+.regime-amber{color:var(--amber)}
 /* 剧本当前区间高亮 */
 .guidance>div.on{background:var(--on-bg)}
 /* 评分历史 */
@@ -227,6 +231,7 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
         <span class="lscore" id="l2score">--</span>
       </div>
       <div id="l2rows"></div>
+      <div id="mapHints"></div>
       <div class="srcnote" id="l2note"></div>
     </article>
 
@@ -316,7 +321,7 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
 
   <footer>
     综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.6
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.7
   </footer>
 </main>
 
@@ -517,6 +522,15 @@ const INDEXES = [
   { sym: "usINX",    name: "标普500",   tag: "隔夜" }
 ];
 
+// 跨市场传导锚（借鉴 ai-chain-quant-global 的映射网络思路）：
+// 美股 AI 锚隔夜异动（|涨跌|≥1.5%）→ 按题材标签映射到自选池，提示跟随/压制方向
+const ANCHORS = [
+  { sym: "usNVDA", name: "英伟达", maps: ["光模块", "AI服务器", "算力服务器", "IDC", "AI芯片"] },
+  { sym: "usAMD",  name: "AMD",    maps: ["AI芯片", "算力服务器"] },
+  { sym: "usTSM",  name: "台积电", maps: ["芯片代工", "半导体设备"] },
+  { sym: "usMSFT", name: "微软",   maps: ["AI应用", "AI大模型", "云·华为链"] }
+];
+
 /* ================= 状态 ================= */
 const S = {
   q: {},          // 实时报价 sym -> quote
@@ -568,7 +582,7 @@ function parseQt(raw) {
 }
 
 async function loadQuotes() {
-  const syms = [TARGET, BENCH, ...INDEXES.map(x => x.sym), ...PEERS.map(x => x.sym), ...WL.map(x => x.sym)];
+  const syms = [TARGET, BENCH, ...INDEXES.map(x => x.sym), ...ANCHORS.map(x => x.sym), ...PEERS.map(x => x.sym), ...WL.map(x => x.sym)];
   const uniq = [...new Set(syms)];
   const ok = await jsonp("https://qt.gtimg.cn/q=" + uniq.join(","), { charset: "gbk" });
   if (ok) {
@@ -892,6 +906,24 @@ function overheatPenalty(sym) {
   return { p: Math.min(20, Math.max(p2, p5)), r2, r5 };
 }
 
+// 主线状态机（借鉴 ai-chain-quant-global）：强攻/轮动/分歧/退潮 四态判定
+// 输入：境内环境L1 · 全球情绪L2 · 自选池上涨宽度，规则透明可溯
+function computeRegime(L) {
+  if (!Number.isFinite(L.l1) || !Number.isFinite(L.l2)) return null;
+  let up = 0, tot = 0;
+  for (const w of WL) {
+    const wq = S.q[w.sym];
+    if (wq && Number.isFinite(wq.pct)) { tot++; if (wq.pct > 0) up++; }
+  }
+  if (!tot) return null;
+  const br = up / tot;
+  const why = "境内" + L.l1.toFixed(0) + " · 全球" + L.l2.toFixed(0) + " · 池内上涨" + (br * 100).toFixed(0) + "%";
+  if (L.l1 >= 60 && L.l2 >= 55 && br >= 0.6) return { name: "强攻", cls: "up", why };
+  if ((L.l1 < 45 && L.l2 < 45) || br <= 0.25) return { name: "退潮", cls: "down", why };
+  if (Math.abs(L.l1 - L.l2) >= 25 || (Math.min(L.l1, L.l2) >= 55 && br < 0.45)) return { name: "分歧", cls: "regime-amber", why };
+  return { name: "轮动", cls: "flat", why };
+}
+
 // 自选票综合评分：与本票同口径（L1/L2共享市场层，L3按实际联动匹配，L4逐票计算，缺失层重加权）
 function stockScore(sym, l1, l2) {
   const l3 = layerScore(linkedRows(sym));
@@ -1101,6 +1133,27 @@ function render() {
   const pen = rsPenalty(TARGET);
   const oh = overheatPenalty(TARGET);
   const score = wAvail ? Math.max(0, sSum / wAvail - pen.p - oh.p) : null;
+
+  // 主线状态芯片（插入指数带最前）
+  const rg = computeRegime(L);
+  if (rg) {
+    $("strip").insertAdjacentHTML("afterbegin",
+      `<div class="chip regime"><span>主线状态 · 境内/全球/宽度</span><b class="${rg.cls}">${rg.name}<i>${rg.why}</i></b></div>`);
+  }
+
+  // 跨市场传导提示（隔夜美股锚异动 → 池内映射）
+  const hints = [];
+  for (const a of ANCHORS) {
+    const aq = S.q[a.sym];
+    if (!aq || !Number.isFinite(aq.pct) || Math.abs(aq.pct) < 1.5) continue;
+    const names = WL.filter(w => w.tag && a.maps.some(t => w.tag.includes(t))).slice(0, 4)
+      .map(w => (S.q[w.sym] && S.q[w.sym].name) || w.name);
+    if (!names.length) continue;
+    hints.push(`<div class="frow"><span>${a.name} <b class="${toneCls(aq.pct)}" style="font:650 12px var(--mono)">${signed(aq.pct, "%")}</b></span><span style="font-size:11px;color:var(--muted)">${aq.pct > 0 ? "利好映射" : "压制映射"}：${names.join("、")}等</span><span class="val" style="color:var(--faint)">隔夜</span></div>`);
+  }
+  $("mapHints").innerHTML = hints.length
+    ? `<p class="sub" style="margin:10px 0 2px">跨市场传导（美股锚隔夜异动 → 池内映射方向）</p>` + hints.join("")
+    : "";
 
   ["l1", "l2", "l3", "l4"].forEach(k => {
     $(k + "score").textContent = Number.isFinite(L[k]) ? L[k].toFixed(0) : "--";
