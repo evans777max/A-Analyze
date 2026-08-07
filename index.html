@@ -321,7 +321,7 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
 
   <footer>
     综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.8
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.9
   </footer>
 </main>
 
@@ -989,7 +989,7 @@ function layerScore(rows) {
   return valid.reduce((s, r) => s + r.score * r.w, 0) / wsum;
 }
 
-function computeVerdict(score, q, lv, pen, oh) {
+function computeVerdict(score, q, lv, pen, oh, L) {
   let band;
   if (score >= 70) band = { key: "atk", name: "进攻", pos: "60–80%", tone: "tone-atk" };
   else if (score >= 55) band = { key: "hold", name: "积极持有", pos: "40–60%", tone: "tone-hold" };
@@ -1002,6 +1002,11 @@ function computeVerdict(score, q, lv, pen, oh) {
   if (defense && q && q.price < defense.p) {
     band = { key: "def", name: "防守（硬规则）", pos: "0–20%", tone: "tone-def" };
     notes.push("已跌破趋势防线 " + fmt(defense.p) + "，模型分数被硬规则覆盖，先等企稳。");
+    // 假摔警示（2026-08-07 无利空闪崩V回的经验固化）：盘中破位但环境层不弱时，
+    // 破位更可能是止损盘/筹码行为的机械出清而非信息驱动，假摔概率偏高
+    if (L && Number.isFinite(L.l1) && Number.isFinite(L.l2) && L.l1 >= 50 && L.l2 >= 40) {
+      notes.push("⚠ 破位与环境背离：境内" + L.l1.toFixed(0) + "/全球" + L.l2.toFixed(0) + " 并不弱，无利空背景的盘中破位假摔概率偏高——防守档执行以收盘有效失守为准，勿在坑底追砸。");
+    }
   }
   const bz = S.q[BENCH];
   if (bz && bz.pct < -1.5 && band.key === "atk") {
@@ -1261,7 +1266,7 @@ function render() {
 
   // 评分卡
   if (Number.isFinite(score)) {
-    const v = computeVerdict(score, q, lv, pen, oh);
+    const v = computeVerdict(score, q, lv, pen, oh, L);
     $("scoreNum").textContent = score.toFixed(0);
     const cir = 2 * Math.PI * 46;
     $("gaugeArc").setAttribute("stroke-dasharray", (score / 100 * cir).toFixed(1) + " " + cir.toFixed(1));

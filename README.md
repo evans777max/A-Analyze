@@ -1,7 +1,7 @@
 # A-Analyze
 
 ![Live](https://img.shields.io/badge/Live-edgeone.cool-46d39a?style=flat-square)
-![Version](https://img.shields.io/badge/version-v3.8-102a43?style=flat-square)
+![Version](https://img.shields.io/badge/version-v3.9-102a43?style=flat-square)
 ![Single File](https://img.shields.io/badge/single--file-index.html-blue?style=flat-square)
 ![Zero Deps](https://img.shields.io/badge/dependencies-0-success?style=flat-square)
 ![Vanilla JS](https://img.shields.io/badge/vanilla-JS%2FCSS-f7df1e?style=flat-square)
