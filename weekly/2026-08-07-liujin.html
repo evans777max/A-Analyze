@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#102a43">
+<meta name="description" content="流金周报 · 2026-08-03~08-07：全球与A股指数、机制评分周榜、周五尾盘结构性分化、盘外全球核心讯息">
+<title>流金周报 · 2026-08-03 ~ 08-07</title>
+<style>
+:root{
+  --ink:#101828;--ink2:#475467;--muted:#667085;--faint:#98a2b3;
+  --line:#e4e7ec;--line2:#f2f4f7;
+  --paper:#fff;--wash:#f5f7fa;--track:#edf0f4;
+  --navy:#102a43;--accent:#102a43;--bar-from:#9db4c9;
+  --topbar-ink:#fff;--topbar-dim:#d0d9e4;
+  --red:#d92d20;--green:#039855;--amber:#b54708;
+  --t-red-ink:#b42318;--t-red-bg:#fef3f2;
+  --t-amber-ink:#b54708;--t-amber-bg:#fffaeb;
+  --t-blue-ink:#175cd3;--t-blue-bg:#eff8ff;
+  --t-green-ink:#027a48;--t-green-bg:#ecfdf3;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace
+}
+[data-theme="dark"]{
+  --ink:#ececef;--ink2:#b9b9c1;--muted:#8b8b96;--faint:#63636d;
+  --line:#2a2a32;--line2:#1f1f26;
+  --paper:#131316;--wash:#09090b;--track:#27272d;
+  --navy:#0f1216;--accent:#7dd3fc;--bar-from:#334155;
+  --topbar-ink:#ececef;--topbar-dim:#8b8b96;
+  --red:#fb7185;--green:#34d399;--amber:#fbbf24;
+  --t-red-ink:#fda4af;--t-red-bg:rgba(251,113,133,.14);
+  --t-amber-ink:#fcd34d;--t-amber-bg:rgba(251,191,36,.14);
+  --t-blue-ink:#7dd3fc;--t-blue-bg:rgba(56,189,248,.14);
+  --t-green-ink:#6ee7b7;--t-green-bg:rgba(52,211,153,.14)
+}
+*{box-sizing:border-box}html{background:var(--wash)}
+body{margin:0;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--wash)}
+.topbar{height:54px;padding:0 max(20px,calc((100vw - 1180px)/2));display:flex;align-items:center;justify-content:space-between;color:var(--topbar-ink);background:var(--navy);border-bottom:1px solid rgba(255,255,255,.07)}
+.brand{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700}
+.dot{width:8px;height:8px;border-radius:50%;background:#46d39a;box-shadow:0 0 0 5px #46d39a20}
+.top-right{display:flex;align-items:center;gap:14px}
+.theme-btn{border:1px solid rgba(255,255,255,.25);background:transparent;color:var(--topbar-ink);padding:5px 11px;font-size:12px;cursor:pointer;transition:background .2s}
+.theme-btn:hover{background:rgba(255,255,255,.12)}
+.back{font-size:12px;color:var(--topbar-dim);text-decoration:none}
+.back:hover{color:var(--topbar-ink)}
+.shell{width:min(1180px,calc(100% - 32px));margin:auto;padding:20px 0 40px}
+.up{color:var(--red)}.down{color:var(--green)}.flat{color:var(--muted)}
+.strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.chip{flex:0 0 auto;min-width:118px;padding:10px 12px;background:var(--paper);border:1px solid var(--line)}
+.chip span{display:block;font-size:11px;color:var(--muted);white-space:nowrap}
+.chip b{display:block;margin-top:4px;font:650 13px/1.4 var(--mono);white-space:nowrap}
+.chip i{font-style:normal;font-size:11px;margin-left:4px}
+.card{background:var(--paper);border:1px solid var(--line);padding:22px 26px}
+.card.main{border-top:3px solid var(--accent);margin-top:14px}
+.eyebrow{display:block;margin:0 0 8px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+h1{margin:0;font-size:24px}
+.quote{display:flex;align-items:flex-end;gap:18px;margin-top:14px;flex-wrap:wrap}
+.price{font:700 44px/1 var(--mono);letter-spacing:-.05em}
+.change{padding-bottom:4px;font:700 17px/1 var(--mono)}
+.stamp{margin:14px 0 0;color:var(--muted);font-size:12px;line-height:1.8}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.panel{padding:20px 22px;background:var(--paper);border:1px solid var(--line);min-width:0}
+.full{grid-column:1/-1}
+.panel h2{margin:0;font-size:16px}
+.panel .sub{margin:2px 0 0;font-size:11px;color:var(--muted)}
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 6px;color:var(--muted);font-weight:500;font-size:11px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 6px;border-bottom:1px solid var(--line2);font-family:var(--mono);white-space:nowrap}
+td.n{font-family:inherit}
+th.r,td.r{text-align:right}
+tbody tr:last-child td{border-bottom:0}
+.tbl-wrap{overflow-x:auto}
+.tag{padding:4px 7px;font-size:10px;font-weight:700}
+.green{color:var(--t-green-ink);background:var(--t-green-bg)}.blue{color:var(--t-blue-ink);background:var(--t-blue-bg)}.amber{color:var(--t-amber-ink);background:var(--t-amber-bg)}.red{color:var(--t-red-ink);background:var(--t-red-bg)}
+.srcnote{margin-top:10px;font-size:11px;color:var(--faint);line-height:1.7}
+.news{margin:0;padding:0;list-style:none}
+.news li{padding:13px 0;border-top:1px solid var(--line2);font-size:12.5px;line-height:1.8}
+.news li:first-child{border-top:0;padding-top:2px}
+.news b{display:block;font-size:13px;margin-bottom:3px}
+.news .impact{display:block;margin-top:4px;color:var(--ink2)}
+.news .impact:before{content:"→ 对池子的含义：";color:var(--muted);font-size:11px}
+.news a{color:var(--faint);font-size:11px;text-decoration:none;border-bottom:1px dashed var(--faint)}
+.news a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.rankn{display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;font:700 11px var(--mono);color:var(--topbar-ink);background:var(--navy)}
+[data-theme="dark"] .rankn{background:#27272d}
+footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line-height:1.8}
+footer a{color:var(--faint)}
+@media(max-width:860px){
+.topbar{padding:0 16px}.shell{width:calc(100% - 20px);padding-top:12px}
+.grid{grid-template-columns:1fr}.full{grid-column:auto}.price{font-size:38px}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><i class="dot"></i>A-Analyze · 流金周报</div>
+  <div class="top-right">
+    <a class="back" href="../index.html">返回实时看盘</a>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="切换浅色/深色主题">深色</button>
+  </div>
+</header>
+<main class="shell">
+
+  <!-- 指数周涨跌带：A股 + 全球 -->
+  <section class="strip">
+    <div class="chip"><span>北证50 · 周</span><b class="up">+4.71%<i>1134.24</i></b></div>
+    <div class="chip"><span>上证指数 · 周</span><b class="up">+2.81%<i>3940.04</i></b></div>
+    <div class="chip"><span>深证成指 · 周</span><b class="up">+5.39%<i>14311.01</i></b></div>
+    <div class="chip"><span>创业板指 · 周</span><b class="up">+6.55%<i>3563.12</i></b></div>
+    <div class="chip"><span>科创50 · 周</span><b class="up">+6.61%<i>1744.02</i></b></div>
+    <div class="chip"><span>道琼斯 · 周¹</span><b class="up">+2.67%<i>53885.10</i></b></div>
+    <div class="chip"><span>纳斯达克 · 周¹</span><b class="up">+3.84%<i>26348.35</i></b></div>
+    <div class="chip"><span>标普500 · 周¹</span><b class="up">+2.94%<i>7709.96</i></b></div>
+    <div class="chip"><span>恒生指数 · 周</span><b class="down">-0.84%<i>25666.31</i></b></div>
+    <div class="chip"><span>恒生科技 · 周</span><b class="up">+0.59%<i>4857.71</i></b></div>
+    <div class="chip"><span>日经225 · 周</span><b class="up">+1.93%<i>65606.71</i></b></div>
+    <div class="chip"><span>韩国KOSPI · 周</span><b class="down">-5.10%<i>6258.77</i></b></div>
+  </section>
+
+  <!-- 流金本周 -->
+  <section class="card main">
+    <span class="eyebrow">920021 · 北京证券交易所 · 传媒/AI应用 · 周度复盘 2026-08-03 ~ 08-07</span>
+    <h1>流金科技 · 本周 <span class="up">+4.00%</span></h1>
+    <div class="quote"><strong class="price">7.54</strong><span class="change up">周五收盘 · 日 -0.53%</span></div>
+    <p class="stamp">周内节奏：周一随大盘回踩收 7.12（-1.79%）→ 周二放量上攻收 7.65（+7.44%，周内最强一天）→ 周三平收整固 → 周四五缓跌（-0.92% / -0.53%）。周五盘中一度下探 7.24 击穿 7.35 一线，午后收回、收盘站回上方——本周收盘价全部收于 7 元上方，周线收涨。北证50 周 +4.71%，流金基本跟上指数节奏。</p>
+  </section>
+
+  <section class="grid">
+    <!-- 指数每日明细 -->
+    <article class="panel full">
+      <div class="panel-head">
+        <div><h2>大盘指数 · 每日涨跌与周度表现</h2><p class="sub">A股全口径 08-03 ~ 08-07；美股为 08-03 ~ 08-06 四个交易日（周五时段于北京时间今晚开盘，见注¹）</p></div>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>指数</th><th class="r">周一</th><th class="r">周二</th><th class="r">周三</th><th class="r">周四</th><th class="r">周五</th><th class="r">周涨跌</th></tr></thead>
+        <tbody>
+          <tr><td class="n">上证指数</td><td class="r down">-0.59%</td><td class="r up">+0.33%</td><td class="r up">+1.47%</td><td class="r up">+0.57%</td><td class="r up">+1.02%</td><td class="r up"><b>+2.81%</b></td></tr>
+          <tr><td class="n">深证成指</td><td class="r down">-0.96%</td><td class="r up">+3.25%</td><td class="r up">+1.86%</td><td class="r down">-0.24%</td><td class="r up">+1.42%</td><td class="r up"><b>+5.39%</b></td></tr>
+          <tr><td class="n">创业板指</td><td class="r down">-1.24%</td><td class="r up">+5.64%</td><td class="r up">+1.32%</td><td class="r down">-0.55%</td><td class="r up">+1.35%</td><td class="r up"><b>+6.55%</b></td></tr>
+          <tr><td class="n">科创50</td><td class="r down">-5.08%</td><td class="r up">+4.09%</td><td class="r up">+4.78%</td><td class="r up">+0.45%</td><td class="r up">+2.51%</td><td class="r up"><b>+6.61%</b></td></tr>
+          <tr><td class="n">北证50</td><td class="r down">-0.66%</td><td class="r up">+1.62%</td><td class="r up">+2.37%</td><td class="r up">+0.31%</td><td class="r up">+1.01%</td><td class="r up"><b>+4.71%</b></td></tr>
+          <tr><td class="n">道琼斯 ¹</td><td class="r up">+1.32%</td><td class="r up">+1.71%</td><td class="r up">+0.49%</td><td class="r down">-0.85%</td><td class="r flat">今晚</td><td class="r up"><b>+2.67%</b></td></tr>
+          <tr><td class="n">纳斯达克 ¹</td><td class="r up">+2.13%</td><td class="r up">+2.59%</td><td class="r down">-0.83%</td><td class="r down">-0.06%</td><td class="r flat">今晚</td><td class="r up"><b>+3.84%</b></td></tr>
+          <tr><td class="n">标普500 ¹</td><td class="r up">+1.48%</td><td class="r up">+1.79%</td><td class="r down">-0.17%</td><td class="r down">-0.18%</td><td class="r flat">今晚</td><td class="r up"><b>+2.94%</b></td></tr>
+          <tr><td class="n">恒生指数</td><td class="r up">+0.48%</td><td class="r down">-0.60%</td><td class="r up">+0.24%</td><td class="r down">-1.49%</td><td class="r up">+0.53%</td><td class="r down"><b>-0.84%</b></td></tr>
+          <tr><td class="n">恒生科技</td><td class="r up">+0.96%</td><td class="r up">+0.21%</td><td class="r up">+0.97%</td><td class="r down">-2.28%</td><td class="r up">+0.77%</td><td class="r up"><b>+0.59%</b></td></tr>
+          <tr><td class="n">日经225</td><td class="r down">-0.94%</td><td class="r up">+0.32%</td><td class="r up">+3.66%</td><td class="r down">-0.93%</td><td class="r down">-0.12%</td><td class="r up"><b>+1.93%</b></td></tr>
+          <tr><td class="n">韩国KOSPI</td><td class="r down">-5.12%</td><td class="r up">+1.62%</td><td class="r up">+3.76%</td><td class="r down">-4.57%</td><td class="r down">-0.60%</td><td class="r down"><b>-5.10%</b></td></tr>
+        </tbody>
+      </table></div>
+      <p class="srcnote">¹ 美股周五（美东时间）尚未开盘，周涨跌统计至周四收盘；今晚 21:30（北京时间）公布美国 7 月非农，周五时段表现计入下周复盘。周涨跌均以 07-31 收盘为基准。A股节奏：周一普跌 → 周二强力 V 型反转 → 周三续涨 → 周四分化 → 周五普涨收周内高位。</p>
+    </article>
+
+    <!-- 机制评分 Top5 -->
+    <article class="panel full">
+      <div class="panel-head">
+        <div><h2>自选池 · 本周机制评分 Top5</h2><p class="sub">按周内 5 个交易日收盘评分快照的算术平均排序（单看某一日评分易受当日盘面扰动，周均分更能反映全周综合状态）</p></div>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th></th><th>标的</th><th class="r">周均分</th><th class="r">五日评分轨迹（一 → 五）</th><th class="r">周涨跌</th><th class="r">周五收盘</th></tr></thead>
+        <tbody>
+          <tr><td><span class="rankn">1</span></td><td class="n">流金科技 <span style="color:var(--faint)">920021</span></td><td class="r"><b>67.4</b></td><td class="r">60.3 · 86.7 · 64.4 · 56.1 · 69.4</td><td class="r up">+4.00%</td><td class="r">7.54</td></tr>
+          <tr><td><span class="rankn">2</span></td><td class="n">科大讯飞 <span style="color:var(--faint)">002230</span></td><td class="r"><b>67.0</b></td><td class="r">63.6 · 80.5 · 75.1 · 50.6 · 65.0</td><td class="r up">+3.10%</td><td class="r">43.53</td></tr>
+          <tr><td><span class="rankn">3</span></td><td class="n">数据港 <span style="color:var(--faint)">603881</span></td><td class="r"><b>64.1</b></td><td class="r">61.6 · 82.2 · 76.3 · 44.3 · 55.9</td><td class="r up">+5.89%</td><td class="r">25.71</td></tr>
+          <tr><td><span class="rankn">4</span></td><td class="n">中国卫通 <span style="color:var(--faint)">601698</span></td><td class="r"><b>62.6</b></td><td class="r">54.2 · 74.4 · 73.5 · 47.9 · 63.1</td><td class="r up">+8.72%</td><td class="r">27.42</td></tr>
+          <tr><td><span class="rankn">5</span></td><td class="n">软通动力 <span style="color:var(--faint)">301236</span></td><td class="r"><b>62.4</b></td><td class="r">44.7 · 68.0 · 85.7 · 51.7 · 61.9</td><td class="r up">+8.82%</td><td class="r">41.71</td></tr>
+        </tbody>
+      </table></div>
+      <p class="srcnote">评分为每日收盘快照（data/history.json 同源），周均分口径下榜单与"只看周五"或"只看周涨幅"均不同——例如优刻得周涨 +15.18% 但周均分 62.3 列第 7；周五单日看流金 69.4 也非全池最高。全池 26 只本周 23 涨 3 跌。</p>
+    </article>
+
+    <!-- 周五尾盘结构性分化 -->
+    <article class="panel full">
+      <div class="panel-head">
+        <div><h2>周五午后：一边跳水、一边承接 —— 结构性调仓，而非集体避险</h2><p class="sub">分时数据扫描全池 21 只（14:30→收盘 与 午后高点→收盘 两个口径），本周最值得留档的盘面现象</p></div>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>标的</th><th>板块</th><th class="r">午后高点 → 收盘</th><th class="r">14:30 → 收盘</th><th class="n">备注</th></tr></thead>
+        <tbody>
+          <tr><td class="n">中际旭创</td><td class="n"><span class="tag red">光模块</span></td><td class="r down">-6.47%</td><td class="r up">+0.15%</td><td class="n" style="font-size:11px;color:var(--muted)">13:07 见顶 983.48，主跌波 14:04-14:17 放量，收 919.87</td></tr>
+          <tr><td class="n">新易盛</td><td class="n"><span class="tag red">光模块</span></td><td class="r down">-5.04%</td><td class="r up">+0.68%</td><td class="n" style="font-size:11px;color:var(--muted)">与中际旭创同节奏，14:04-14:14 放量下杀后横住</td></tr>
+          <tr><td class="n">众诚科技</td><td class="n"><span class="tag red">北交·AI</span></td><td class="r down">-4.93%</td><td class="r down">-1.34%</td><td class="n" style="font-size:11px;color:var(--muted)">13:01 高点 25.54 一路阴跌，收盘竞价 627 手再砸 -1.30%</td></tr>
+          <tr><td class="n">浪潮信息</td><td class="n">算力服务器</td><td class="r down">-1.53%</td><td class="r up">+0.52%</td><td class="n" style="font-size:11px;color:var(--muted)">小幅回落，尾盘企稳</td></tr>
+          <tr><td class="n">润泽科技</td><td class="n">IDC</td><td class="r down">-1.41%</td><td class="r up">+0.42%</td><td class="n" style="font-size:11px;color:var(--muted)">小幅回落，尾盘企稳</td></tr>
+          <tr><td class="n">工业富联</td><td class="n">AI服务器</td><td class="r down">-0.83%</td><td class="r up">+0.69%</td><td class="n" style="font-size:11px;color:var(--muted)">尾盘回升</td></tr>
+          <tr><td class="n">寒武纪</td><td class="n"><span class="tag green">AI芯片</span></td><td class="r down">-0.75%</td><td class="r up">+2.38%</td><td class="n" style="font-size:11px;color:var(--muted)">14:30 后强势拉升，收 1199.93 逼近日高 1209</td></tr>
+          <tr><td class="n">澜起科技</td><td class="n"><span class="tag green">存储芯片</span></td><td class="r down">-0.67%</td><td class="r up">+1.05%</td><td class="n" style="font-size:11px;color:var(--muted)">尾盘放量承接回升</td></tr>
+          <tr><td class="n">科大讯飞</td><td class="n">AI应用</td><td class="r down">-0.21%</td><td class="r up">+0.25%</td><td class="n" style="font-size:11px;color:var(--muted)">全程平稳</td></tr>
+          <tr><td class="n">中芯国际</td><td class="n"><span class="tag green">芯片代工</span></td><td class="r flat">0.00%</td><td class="r up">+1.50%</td><td class="n" style="font-size:11px;color:var(--muted)">尾盘持续上攻，收盘价 128.50 即全天最高价</td></tr>
+        </tbody>
+      </table></div>
+      <p class="srcnote" style="font-size:12px;color:var(--ink2)">读法：跳水集中在 13:00-14:20 时段而非收盘竞价，且高度集中于<b>光模块</b>（美收入敞口大、年内涨幅高）与前一日中报脉冲后的<b>众诚</b>；同一时段<b>国产芯片链</b>（芯片代工 / AI芯片 / 存储 / 设备）获资金承接，中芯国际收在全天最高价、寒武纪尾盘半小时 +2.38%。14:30→收盘口径全池 21 只中仅 4 只为负。<b>结论：这是"兑现高位美敞口品种 → 加仓国产自主链"的结构性调仓，不是系统性尾盘避险</b>——与盘外的 232 多晶硅关税落地、今晚非农、周末美伊变数三条讯息方向一致（见下一板块）。</p>
+    </article>
+
+    <!-- 盘外全球核心讯息 -->
+    <article class="panel full">
+      <div class="panel-head">
+        <div><h2>盘外 · 全球市场核心讯息与影响</h2><p class="sub">截至 2026-08-07（周五）北京时间晚间 · 均为盘外要素，直接影响周一开盘风险偏好</p></div>
+      </div>
+      <ul class="news">
+        <li><b>① 今晚 21:30 美国 7 月非农</b>周四美股已提前缩量转跌观望；美债 10 年期收益率升至 4.68%（单日 +7bp），高油价重新点燃"联储维持高利率更久"的担忧。<span class="impact">数据强 → 美债利率与美元再上行，压制全球风偏；数据弱 → 降息预期回暖。周一 A 股开盘将直接消化该结果。</span><a href="https://economictimes.indiatimes.com/markets/us-stocks/news/global-market-today-asian-shares-mixed-as-investors-await-us-jobs-data/articleshow/133018578.cms" target="_blank" rel="noopener">Economic Times</a></li>
+        <li><b>② 美伊霍尔木兹和谈反复，油价大幅波动</b>周三"接近达成协议"的信号推动道指创收盘纪录，周四谈判疑虑再起、布伦特原油单日涨超 4%。周末为谈判窗口。<span class="impact">周末若有实质进展 → 油价回落、风偏修复；若破裂 → 能源通胀链重新定价。属于周一开盘前无法对冲的外生变量。</span><a href="https://www.home.saxo/en-sg/content/articles/macro/market-quick-take---hormuz-doubts-lift-oil-as-payrolls-loom---7-august-2026-07082026" target="_blank" rel="noopener">Saxo</a></li>
+        <li><b>③ 美国 232 多晶硅关税落地（8-6 签署：15% 关税 + 价格下限）</b>直指半导体与光伏供应链，中美科技供应链博弈再升级；同期还有 NVIDIA AI-RAN 合作与外资机构增配中国科技股的消息。<span class="impact">强化"国产自主可控"主题定价——与周五池内"卖光模块、买国产芯片链"的调仓方向互为印证；光模块等美收入敞口品种的政策贴现风险上升。</span><a href="https://www.kucoin.com/news/flash/trump-announces-tariffs-on-polysilicon-nvidia-ai-ran-collaboration-and-major-institutional-investments-in-chinese-tech-stocks" target="_blank" rel="noopener">KuCoin News</a></li>
+        <li><b>④ 美股存储芯片财报暴雷</b>美光、西部数据等存储板块财报后重挫，拖累纳指周三四连跌两日。<span class="impact">海外存储链走弱 vs 国内存储（澜起周五尾盘获承接）走独立逻辑——海外映射的传导在弱化，选股上内外盘"同板块不同命"的情形增多。</span><a href="https://economictimes.indiatimes.com/markets/us-stocks/news/ow-jones-stock-market-live-updates-nasdaq-sp-500-us-iran-hormuz-peace-deal-crude-oil-fed-warsh-rate-micron-western-digital-amd-marvell-chip-stock-price-news-6th-august-2026/liveblog/133004391.cms" target="_blank" rel="noopener">Economic Times</a></li>
+        <li><b>⑤ 韩国 KOSPI 危机余波未平</b>7 月单月 -22%（月内最深 -34%），导火索是"中国国产芯片制造设备开始量产"引发的半导体重估 + 单一股票杠杆 ETF 强平循环；07-31 史诗级 +17.9% 反弹（三星 +26.8%、SK 海力士 +29.9%）后，本周再跌 5.10%。<span class="impact">两层含义：其一，"中国芯片设备量产"叙事正是 A 股国产链走强的镜像；其二，韩国的杠杆 ETF 强平机制展示了单一主题拥挤交易的尾部风险，对 A 股算力拥挤度是前车之鉴。</span><a href="https://www.chosun.com/english/market-money-en/2026/07/31/IT6BC7FEZJF4RFNXNVVTYXXBMQ/" target="_blank" rel="noopener">Chosun</a> · <a href="https://upi.com/Top_News/World-News/2026/07/31/korea-KOSPI-Korea-Stock-Index-skyrocketed-eighteen-percent-record-semiconductor-gains/2811785517975" target="_blank" rel="noopener">UPI</a></li>
+        <li><b>⑥ 港股平淡但南向资金持续流入科技</b>恒指周 -0.84%（周四竞价时段一度急跌），恒生科技周 +0.59%；北水南向单日净流入南方恒生科技 ETF 逾 31 亿港元。<span class="impact">外资谨慎、内资承接的分化格局延续——中国科技资产的边际定价权在向内资转移，与 A 股独立走强互相印证。</span><a href="https://gbcode.rthk.hk/TuniS/news.rthk.hk/rthk/ch/component/k2/1865178-20260806.htm" target="_blank" rel="noopener">RTHK</a> · <a href="https://www.aastocks.com/sc/stocks/analysis/stock-aafn-con/03033/AAFN/NOW.1505994/hk-stock-news" target="_blank" rel="noopener">AASTOCKS</a></li>
+      </ul>
+      <p class="srcnote">讯息为盘外定性参考（外媒报道均经改写归纳，链接为原始出处）；下周一开盘前重点核对：非农结果、美伊周末动向、美股周五时段表现。</p>
+    </article>
+  </section>
+
+</main>
+<footer>
+  流金周报 · 2026-08-03 ~ 08-07 · 生成于 2026-08-07 收盘后（北京时间晚间）<br>
+  数据源：腾讯行情（A股/港股分时与日K）· Yahoo Finance（美/日/韩指数日K）· data/history.json（评分快照）· 周涨跌以 2026-07-31 收盘为基准<br>
+  <a href="../index.html">A-Analyze 实时看盘</a> · <a href="2026-08-07.html">完整版周报（含模型分析）</a> · 内容为市场记录与观察，非投资建议
+</footer>
+<script>
+const THEME_KEY = "aa_theme_v1";
+function applyTheme(t) {
+  document.documentElement.setAttribute("data-theme", t);
+  const b = document.getElementById("themeBtn");
+  if (b) b.textContent = t === "dark" ? "浅色" : "深色";
+  const mc = document.querySelector('meta[name="theme-color"]');
+  if (mc) mc.content = t === "dark" ? "#09090b" : "#102a43";
+}
+function toggleTheme() {
+  const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  applyTheme(next);
+}
+(function initTheme() {
+  let t = null;
+  try { t = localStorage.getItem(THEME_KEY); } catch (e) {}
+  if (t !== "dark" && t !== "light") {
+    t = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+  }
+  applyTheme(t);
+})();
+</script>
+</body>
+</html>
