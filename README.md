@@ -93,7 +93,7 @@ EdgeOne Pages Git 集成：推送到 `main` 分支即自动部署。改动 `inde
 | 周 | Git 版（内地可看） | 线上 HTML | 一句话摘要 |
 |---|---|---|---|
 | 2026-08-03 ~ 08-07 | [2026-08-07.md](weekly/2026-08-07.md) | [html](https://liujin-live-2.edgeone.cool/weekly/2026-08-07.html) | V 型反转周（周一普跌→周五普涨），R2 过热惩罚与 R3 假摔判别双双获收盘后验；汉鑫 97 分事件、众诚中报抢跑→T+1 兑现待定案 |
-| 同周 · 流金版 | [2026-08-07-liujin.md](weekly/2026-08-07-liujin.md) | [html](https://liujin-live-2.edgeone.cool/weekly/2026-08-07-liujin.html) | 简版（无模型分析）：全球+A股 12 指数、周均分 Top5、周五尾盘结构性分化（卖光模块/买国产链）、盘外全球核心讯息 |
+| 同周 · 流金版 | [2026-08-07-liujin.md](weekly/2026-08-07-liujin.md) · [一页纸PDF](weekly/2026-08-07-liujin.pdf) | [html](https://liujin-live-2.edgeone.cool/weekly/2026-08-07-liujin.html) | 简版（无模型分析）：全球+A股 12 指数、周均分 Top5、周五尾盘结构性分化（卖光模块/买国产链）、盘外全球核心讯息 |
 
 ## 免责声明
 
