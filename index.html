@@ -321,7 +321,7 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
 
   <footer>
     综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.7
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.8
   </footer>
 </main>
 
@@ -1056,7 +1056,7 @@ function renderHist() {
   for (const r of shared) map.set(r.d, r);
   for (const r of localArr) if (!map.has(r.d)) map.set(r.d, r);
   const arr = [...map.values()].sort((a, b) => (a.d < b.d ? -1 : 1));
-  const pts = arr.slice(-20);
+  const pts = arr.slice(-40);
   const svg = $("histSvg");
   if (pts.length < 2) {
     svg.innerHTML = "";
@@ -1064,10 +1064,25 @@ function renderHist() {
     return;
   }
   const xs = 300 / (pts.length - 1);
-  const poly = pts.map((r, i) => (i * xs).toFixed(1) + "," + (38 - r.s / 100 * 36).toFixed(1)).join(" ");
+  const X = i => (i * xs).toFixed(1), Y = r => (38 - r.s / 100 * 36).toFixed(1);
   const last = pts[pts.length - 1];
-  svg.innerHTML = `<line x1="0" y1="${38 - 55 / 100 * 36}" x2="300" y2="${38 - 55 / 100 * 36}" style="stroke:var(--line)" stroke-dasharray="4 3"/><polyline points="${poly}" fill="none" style="stroke:var(--accent)" stroke-width="2"/>`;
-  $("histNote").textContent = `近${pts.length}个交易日评分轨迹 ${pts[0].d.slice(5)}→${last.d.slice(5)}，最新 ${last.s.toFixed(0)} 分（虚线=55分持有线 · ${S.sharedHist ? "云端快照+本机实时" : "本机记录"}）`;
+  let firstLive = pts.findIndex(r => !r.bf);
+  if (firstLive === -1) firstLive = pts.length;
+  let html = `<line x1="0" y1="${38 - 55 / 100 * 36}" x2="300" y2="${38 - 55 / 100 * 36}" style="stroke:var(--line)" stroke-dasharray="4 3"/>`;
+  // 回填段（浅色虚线，事后重算）
+  if (firstLive >= 1) {
+    const seg = pts.slice(0, Math.min(firstLive + 1, pts.length));
+    if (seg.length >= 2) html += `<polyline points="${seg.map((r, i) => X(i) + "," + Y(r)).join(" ")}" fill="none" style="stroke:var(--accent);opacity:.45" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+  }
+  // 实录段（实线）
+  if (firstLive < pts.length) {
+    const seg = pts.slice(firstLive);
+    if (seg.length >= 2) html += `<polyline points="${seg.map((r, i) => X(firstLive + i) + "," + Y(r)).join(" ")}" fill="none" style="stroke:var(--accent)" stroke-width="2"/>`;
+    else html += `<circle cx="${X(firstLive)}" cy="${Y(seg[0])}" r="2.5" style="fill:var(--accent)"/>`;
+  }
+  svg.innerHTML = html;
+  const hasBf = pts.some(r => r.bf);
+  $("histNote").textContent = `近${pts.length}个交易日评分轨迹 ${pts[0].d.slice(5)}→${last.d.slice(5)}，最新 ${last.s.toFixed(0)} 分（虚线=55分持有线${hasBf ? " · 浅虚线段=回填重算" : ""} · ${S.sharedHist ? "云端快照+本机实时" : "本机记录"}）`;
 }
 
 /* ================= 渲染 ================= */

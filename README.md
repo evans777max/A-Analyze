@@ -1,7 +1,7 @@
 # A-Analyze
 
 ![Live](https://img.shields.io/badge/Live-edgeone.cool-46d39a?style=flat-square)
-![Version](https://img.shields.io/badge/version-v3.7-102a43?style=flat-square)
+![Version](https://img.shields.io/badge/version-v3.8-102a43?style=flat-square)
 ![Single File](https://img.shields.io/badge/single--file-index.html-blue?style=flat-square)
 ![Zero Deps](https://img.shields.io/badge/dependencies-0-success?style=flat-square)
 ![Vanilla JS](https://img.shields.io/badge/vanilla-JS%2FCSS-f7df1e?style=flat-square)
@@ -73,6 +73,8 @@ v3.0 其他增强：
 - **跨市场传导**：美股 AI 锚（英伟达/AMD/台积电/微软）隔夜异动超 ±1.5% 时，L2 面板按题材标签给出池内映射提示（如"英伟达 +3.4% → 利好映射：中际旭创、新易盛、工业富联…"）。
 
 ## 评分快照管线（v3.6）
+
+历史起点（v3.8）：`scripts/backfill.mjs` 用同口径模型一次性回填了约 60 个交易日的收盘评分（记录带 `bf:1` 标记，轨迹图上以浅色虚线区分"回填重算"与"实录快照"；回填的 L2 仅含纳指 T-1 与恒生科技，其余因子完整）。此后由快照管线逐日实录接续。
 
 GitHub Actions 每个交易日北京时间 15:20 自动运行 `scripts/snapshot.mjs`：拉取全池收盘数据 → 按与页面完全同口径的模型计算每只票的收盘评分 → 追加写入 `data/history.json` 并提交。页面读取该文件作为评分历史基底（全端一致、不依赖用户开着页面），本机盘中实时点作为最新一天的补充。历史保留 250 个交易日。
 
