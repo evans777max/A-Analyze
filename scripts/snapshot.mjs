@@ -1,6 +1,9 @@
-// 每日收盘评分快照（GitHub Actions 定时执行，北京时间约15:20）
+// 每日收盘评分快照（GitHub Actions 定时执行，北京时间约15:20；双cron冗余）
 // 产出 data/history.json：全端一致的评分历史，页面直接读取
 // ⚠️ 本脚本复刻 index.html 的评分模型——页面改模型时必须同步本文件（见 .kiro/memory/项目记忆.md）
+// v4.0（2026-08-08，证据见 .kiro/memory/A股规律观察.md「模型体检」「跨市场传导审计」）：
+//   ① rsPen 退役不再扣分（全年审计判负）② L2 收盘态权重 15→8（隔夜美股只定开盘不定全天）
+//   ③ 快照扩字段：h/l/to（高/低/换手）+ l1-l4 分层分 + op（过热扣分），供后续实录审计与周报直用
 import fs from "node:fs";
 
 const html = fs.readFileSync("index.html", "utf8");
@@ -183,12 +186,21 @@ function run(Q, K) {
   for (const sym of STOCKS) {
     const q = Q[sym];
     if (!q || !Number.isFinite(q.price) || q.price <= 0) continue;
-    const parts = [[l1For(sym), 20], [l2, 15], [l3For(sym), 25], [l4For(sym), 40]];
+    const L = { l1: l1For(sym), l2, l3: l3For(sym), l4: l4For(sym) };
+    const parts = [[L.l1, 20], [L.l2, 8], [L.l3, 25], [L.l4, 40]]; // v4.0：L2 收盘态权重 8
     let w = 0, s = 0;
     for (const [v, wt] of parts) if (Number.isFinite(v)) { w += wt; s += v * wt; }
     if (!w) continue;
-    const score = Math.max(0, s / w - rsPen(sym) - ohPen(sym));
-    out[sym] = { s: +score.toFixed(1), p: q.price, pct: +q.pct.toFixed(2), d: q.time.slice(0, 4) + "-" + q.time.slice(4, 6) + "-" + q.time.slice(6, 8) };
+    const op = ohPen(sym);
+    const score = Math.max(0, s / w - op); // v4.0：rsPen 退役不再扣分
+    const rec = { s: +score.toFixed(1), p: q.price, pct: +q.pct.toFixed(2), d: q.time.slice(0, 4) + "-" + q.time.slice(4, 6) + "-" + q.time.slice(6, 8) };
+    // v4.0 扩字段（保持紧凑：仅有效值写入）
+    if (Number.isFinite(q.high)) rec.h = q.high;
+    if (Number.isFinite(q.low)) rec.l = q.low;
+    if (Number.isFinite(q.turnover)) rec.to = +q.turnover.toFixed(2);
+    for (const k of ["l1", "l2", "l3", "l4"]) if (Number.isFinite(L[k])) rec[k] = +L[k].toFixed(1);
+    if (op > 0) rec.op = +op.toFixed(1);
+    out[sym] = rec;
   }
   return out;
 }
@@ -212,7 +224,7 @@ let hist = {};
 try { hist = JSON.parse(fs.readFileSync(FILE, "utf8")); } catch (e) {}
 for (const [sym, rec] of Object.entries(snap)) {
   const arr = hist[sym] || [];
-  const entry = { d: rec.d, s: rec.s, p: rec.p, pct: rec.pct };
+  const entry = { ...rec }; // v4.0：含扩字段 h/l/to/l1-l4/op
   if (arr.length && arr[arr.length - 1].d === rec.d) arr[arr.length - 1] = entry;
   else arr.push(entry);
   hist[sym] = arr.slice(-250);

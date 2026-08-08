@@ -189,7 +189,7 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
       <p class="stamp" id="valuation" style="margin-top:6px"></p>
     </div>
     <div class="card" id="scoreCard">
-      <span class="eyebrow">综合评分 · 四层因子模型</span>
+      <span class="eyebrow">状态评分 · 四层因子模型 · 衡量当下状态而非预测收益</span>
       <div class="score-wrap">
         <div class="gauge">
           <svg width="108" height="108" viewBox="0 0 108 108">
@@ -198,7 +198,7 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
           </svg>
           <div class="num"><b id="scoreNum">--</b><span>/ 100</span></div>
         </div>
-        <div class="verdict" id="verdict"><b>计算中</b><span class="pos">-- 仓位档</span><p>等待行情与历史数据就绪。</p></div>
+        <div class="verdict" id="verdict"><b>计算中</b><span class="pos">-- 档位</span><p>等待行情与历史数据就绪。</p></div>
       </div>
       <div class="hist"><svg id="histSvg" width="100%" height="40" viewBox="0 0 300 40" preserveAspectRatio="none"></svg><p class="sub" id="histNote" style="margin-top:4px"></p></div>
     </div>
@@ -320,7 +320,7 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
   </section>
 
   <footer>
-    综合评分为公开行情驱动的规则化模型输出，非投资顾问服务 · 仓位档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
+    状态评分为公开行情驱动的规则化模型输出，衡量当下状态强度而非收益预测（全年 IC 审计：评分与次日收益无稳定相关，风险警示信号显著有效）· 档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
     A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.9
   </footer>
 </main>
@@ -879,9 +879,9 @@ function linkedRows(sym) {
   ];
 }
 
-// 软规则：日内大幅跑输所属基准时额外压分（针对"环境强掩盖个股弱"的场景，
-// L4里的RS因子权重不足以对冲强环境层，此规则在极端背离时放大该信号）
-// 触发：RS < -1.5pct；扣分 = (|RS|-1.5)×10，封顶15分
+// 背离警示（v2.7 引入为扣分软规则，v4.0 起退役为纯显示信息）：
+// 全年 IC 审计（3738 样本）显示该惩罚方向打反——被罚组 3 日收益 +0.40% 反高于其它组 +0.27%，
+// 反转特性的池子里惩罚短期弱势是错的。保留计算仅用于"环境强个股弱"的背离提示，不再进评分
 function rsPenalty(sym) {
   const q = S.q[sym], bq = S.q[benchFor(sym)];
   if (!q || !bq || !Number.isFinite(q.pct) || !Number.isFinite(bq.pct)) return { p: 0, rs: null };
@@ -906,6 +906,27 @@ function overheatPenalty(sym) {
   return { p: Math.min(20, Math.max(p2, p5)), r2, r5 };
 }
 
+// v4.0 L2 时变权重（跨市场审计：隔夜美股→A股开盘跳空 corr≈0.5 全年稳定，→日内走势 corr≈0——
+// 隔夜信息在开盘跳空中一次性兑现，开盘后 L2 对当日方向的解释力急剧衰减）
+// 交易日 10:00 前（盘前+开盘定位窗口）满权重 15；10:00 后（含收盘后）降至 8
+function l2Weight() {
+  const n = new Date();
+  const wd = n.getDay(), hm = n.getHours() * 60 + n.getMinutes();
+  return (wd >= 1 && wd <= 5 && hm < 600) ? 15 : 8;
+}
+
+// v4.0 状态透支检测（全年审计：评分高出自身60日常态 +1σ 的样本 n=539，次日均值 -0.40%，
+// 而常态区间样本 +0.14%——评分异常飙升本身是短期透支信号）
+function overshootZ(score) {
+  if (!Number.isFinite(score) || !S.sharedHist) return null;
+  const today = new Date().toISOString().slice(0, 10);
+  const past = (S.sharedHist[TARGET] || []).filter(r => r.d !== today).slice(-60).map(r => r.s).filter(Number.isFinite);
+  if (past.length < 30) return null;
+  const m = past.reduce((a, b) => a + b, 0) / past.length;
+  const sd = Math.sqrt(past.reduce((a, b) => a + (b - m) * (b - m), 0) / (past.length - 1));
+  return sd ? (score - m) / sd : null;
+}
+
 // 主线状态机（借鉴 ai-chain-quant-global）：强攻/轮动/分歧/退潮 四态判定
 // 输入：境内环境L1 · 全球情绪L2 · 自选池上涨宽度，规则透明可溯
 function computeRegime(L) {
@@ -928,11 +949,11 @@ function computeRegime(L) {
 function stockScore(sym, l1, l2) {
   const l3 = layerScore(linkedRows(sym));
   const l4 = layerScore(l4Rows(sym, benchFor(sym)));
-  const parts = [[l1, 20], [l2, 15], [l3, 25], [l4, 40]];
+  const parts = [[l1, 20], [l2, l2Weight()], [l3, 25], [l4, 40]];
   let w = 0, s = 0;
   for (const [v, wt] of parts) if (Number.isFinite(v)) { w += wt; s += v * wt; }
   if (!w) return null;
-  return Math.max(0, s / w - rsPenalty(sym).p - overheatPenalty(sym).p);
+  return Math.max(0, s / w - overheatPenalty(sym).p); // v4.0：rsPenalty 退役不再扣分
 }
 
 function computeFactors() {
@@ -989,7 +1010,7 @@ function layerScore(rows) {
   return valid.reduce((s, r) => s + r.score * r.w, 0) / wsum;
 }
 
-function computeVerdict(score, q, lv, pen, oh, L) {
+function computeVerdict(score, q, lv, pen, oh, L, rg, oz) {
   let band;
   if (score >= 70) band = { key: "atk", name: "进攻", pos: "60–80%", tone: "tone-atk" };
   else if (score >= 55) band = { key: "hold", name: "积极持有", pos: "40–60%", tone: "tone-hold" };
@@ -1014,10 +1035,16 @@ function computeVerdict(score, q, lv, pen, oh, L) {
     notes.push((BENCH_NAME[BENCH] || "基准") + " 大跌超1.5%，系统性风险日不给进攻档。");
   }
   if (pen && pen.p > 0) {
-    notes.push("软规则：日内跑输" + (BENCH_NAME[benchFor(TARGET)] || "基准") + " " + Math.abs(pen.rs).toFixed(1) + "pct，评分已下调 " + pen.p.toFixed(0) + " 分（环境强但个股滞涨，警惕背离）。");
+    notes.push("背离警示：日内跑输" + (BENCH_NAME[benchFor(TARGET)] || "基准") + " " + Math.abs(pen.rs).toFixed(1) + "pct——环境强但个股滞涨（v4.0 起仅提示不扣分：全年审计显示此类票 3 日均值并不更差，但背离本身仍值得留意）。");
   }
   if (oh && oh.p > 0) {
-    notes.push("过热警示：近2日累计 " + (oh.r2 !== null ? oh.r2.toFixed(0) : "--") + "%、近5日 " + (oh.r5 !== null ? oh.r5.toFixed(0) : "--") + "%，评分已下调 " + oh.p.toFixed(0) + " 分——垂直拉升末段追高风险大于动能信号本身。");
+    notes.push("过热警示：近2日累计 " + (oh.r2 !== null ? oh.r2.toFixed(0) : "--") + "%、近5日 " + (oh.r5 !== null ? oh.r5.toFixed(0) : "--") + "%，评分已下调 " + oh.p.toFixed(0) + " 分——全年审计：过热样本次日均值 -2.7%、3日 -7.8%，是全模型最强的反向信号。");
+  }
+  if (rg && rg.name === "退潮" && Number.isFinite(score) && score >= 55) {
+    notes.push("⚠ 退潮主线下的高状态分偏兑现风险：全年审计显示下跌主线中高分组次日显著跑输（IC -0.12 · 日胜率33%）——此时强势更可能被兑现而非延续。");
+  }
+  if (Number.isFinite(oz) && oz > 1) {
+    notes.push("⚠ 状态透支：评分高出自身60日常态 " + oz.toFixed(1) + "σ。全年审计中此类样本次日平均 -0.4%——强状态≠安全买点。");
   }
   if (!notes.length) {
     if (band.key === "atk") notes.push("多层因子共振向好。分批参与，回踩承接区可加，勿追瞬时脉冲。");
@@ -1145,14 +1172,14 @@ function render() {
     l1: layerScore(F.l1), l2: layerScore(F.l2),
     l3: layerScore(F.l3), l4: layerScore(F.l4)
   };
-  const weights = { l1: 20, l2: 15, l3: 25, l4: 40 };
+  const weights = { l1: 20, l2: l2Weight(), l3: 25, l4: 40 };
   let wAvail = 0, sSum = 0;
   for (const k of Object.keys(weights)) {
     if (Number.isFinite(L[k])) { wAvail += weights[k]; sSum += L[k] * weights[k]; }
   }
   const pen = rsPenalty(TARGET);
   const oh = overheatPenalty(TARGET);
-  const score = wAvail ? Math.max(0, sSum / wAvail - pen.p - oh.p) : null;
+  const score = wAvail ? Math.max(0, sSum / wAvail - oh.p) : null; // v4.0：rsPenalty 退役不再扣分
 
   // 主线状态芯片（插入指数带最前）
   const rg = computeRegime(L);
@@ -1266,13 +1293,13 @@ function render() {
 
   // 评分卡
   if (Number.isFinite(score)) {
-    const v = computeVerdict(score, q, lv, pen, oh, L);
+    const v = computeVerdict(score, q, lv, pen, oh, L, rg, overshootZ(score));
     $("scoreNum").textContent = score.toFixed(0);
     const cir = 2 * Math.PI * 46;
     $("gaugeArc").setAttribute("stroke-dasharray", (score / 100 * cir).toFixed(1) + " " + cir.toFixed(1));
     $("gaugeArc").style.stroke = score >= 70 ? "var(--red)" : score >= 55 ? "var(--t-amber-ink)" : score >= 40 ? "var(--t-blue-ink)" : "var(--green)";
     $("verdict").className = "verdict " + v.tone;
-    $("verdict").innerHTML = `<b>${v.name}</b><span class="pos">建议仓位 ${v.pos}</span><p>${v.note}</p>`;
+    $("verdict").innerHTML = `<b>${v.name}</b><span class="pos">参考档位 ${v.pos}</span><p>${v.note}</p>`;
     saveHist(TARGET, score, q);
   }
   renderHist();

@@ -2,6 +2,7 @@ name: daily-score-snapshot
 on:
   schedule:
     - cron: '20 7 * * 1-5'   # UTC 07:20 = 北京时间 15:20（收盘后）；节假日运行会覆盖同日数据，幂等无害
+    - cron: '20 9 * * 1-5'   # UTC 09:20 = 北京时间 17:20 兜底（GitHub cron 常延迟 2.5h+，实测 08-06/08-07 均晚点；同日幂等覆盖）
   workflow_dispatch:
 
 permissions:

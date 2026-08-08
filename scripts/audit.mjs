@@ -1,4 +1,4 @@
-// 模型体检（IC 审计）v2 —— 全年口径
+// 模型体检（IC 审计）v2.1 —— 全年口径（已同步 v4.0 模型：rsPen 不入总分、L2 收盘态权重 8；rsPen 仍单独报告作诊断）
 // 用与页面/快照同口径的模型按历史日重算分层评分，检验各层与未来收益的关系
 // v2 变化：K线拉 260 根（覆盖 2026 全年）、美股/恒科改在线拉取、新增 分月IC / 分行情(regime)IC / 自身历史分位测试
 // 运行：node scripts/audit.mjs  （本机，需可达 quotes.sina.cn / web.ifzq.gtimg.cn / query1.finance.yahoo.com）
@@ -139,12 +139,12 @@ function scoreDay(sym,d){
     rows4.push({score:myPct>=0?lin(vr,0.6,2.5):100-lin(vr,0.6,2.5),w:20});
   }
   const l4=layerScore(rows4);
-  const parts=[[l1,20],[l2,15],[l3,25],[l4,40]];
+  const parts=[[l1,20],[l2,8],[l3,25],[l4,40]]; // v4.0：L2 收盘态权重 8
   let w=0,s=0;
   for(const[v,wt]of parts)if(Number.isFinite(v)){w+=wt;s+=v*wt;}
   if(!w)return null;
   const raw=s/w;
-  let rsPen=0;
+  let rsPen=0; // v4.0 起不入总分，仅作诊断输出
   if(Number.isFinite(bPct)){const rs=myPct-bPct;if(rs<-1.5)rsPen=Math.min(15,(Math.abs(rs)-1.5)*10);}
   const lim=limitFor(sym);
   const r2=i>=2?(p/closes[closes.length-3]-1)*100:null;
@@ -152,7 +152,7 @@ function scoreDay(sym,d){
   const p2=r2!==null?Math.max(0,(r2-1.5*lim)/lim*30):0;
   const p5=r5!==null?Math.max(0,(r5-2*lim)/lim*20):0;
   const ohPen=Math.min(20,Math.max(p2,p5));
-  return {d,l1,l2,l3,l4,raw,rsPen,ohPen,score:Math.max(0,raw-rsPen-ohPen),p,pct:myPct};
+  return {d,l1,l2,l3,l4,raw,rsPen,ohPen,score:Math.max(0,raw-ohPen),p,pct:myPct};
 }
 
 /* ===== regime 标注（按创业板指：MA20 上/下 + 斜率） ===== */
