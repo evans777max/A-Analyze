@@ -42,8 +42,27 @@ const meta = JSON.parse(read("data/model-meta.json"));
 /* 3. 快照收盘态 L2 权重 = 8 */
 /\[L\.l2, 8\]/.test(snap) ? ok("snapshot close-state L2 weight = 8") : bad("snapshot L2 weight", "expected [L.l2, 8]");
 
-/* 4. 页面 10:00 前 L2 权重 = 15 */
-/hm < 600\) \? 15 : 8/.test(idx) ? ok("page l2Weight: 15 before 10:00, 8 after") : bad("page l2Weight rule", "expected (hm < 600) ? 15 : 8");
+/* 4. 页面 10:00 前 L2 权重 = 15，且按北京时间（固定 UTC+8）判定（v4.1.1；行为级验证见 scripts/test-timezone.mjs） */
+{
+  const anchor = /hm < 600 \? 15 : 8/.test(idx);
+  const cnClock = /function chinaMarketClock/.test(idx) && /getUTCDay\(\)/.test(idx);
+  const noLocalTz = !/const wd = n\.getDay\(\)/.test(idx);
+  (anchor && cnClock && noLocalTz) ? ok("page l2Weight: 15 before 10:00 Beijing (fixed UTC+8), 8 after")
+    : bad("page l2Weight rule", `anchor=${anchor} chinaClock=${cnClock} noLocalTz=${noLocalTz}`);
+}
+
+/* 4b. 公开版本一致性（v4.1.1）：页脚版本三元组 / README 徽章与表格 / ARCHITECTURE 均须与 model-meta 一致 */
+{
+  const triad = `App v${meta.appVersion} · Model v${meta.currentModelVersion} · Schema v${meta.historySchemaVersion}`;
+  const footerOk = idx.includes(triad);
+  const readme = read("README.md");
+  const readmeOk = readme.includes(`badge/app-v${meta.appVersion}-`) && readme.includes(`| App Version | **v${meta.appVersion}** |`);
+  const arch = read("docs/ARCHITECTURE.md");
+  const archOk = arch.includes(`App v${meta.appVersion} `);
+  const noStale = !/v3\.9/.test(idx.split("<footer>")[1]?.split("</footer>")[0] || "");
+  (footerOk && readmeOk && archOk && noStale) ? ok(`public version consistency (${triad})`)
+    : bad("public version consistency", `footer=${footerOk} readme=${readmeOk} arch=${archOk} noStaleFooter=${noStale}`);
+}
 
 /* 5. rsPen 不参与总分（三处） */
 {
