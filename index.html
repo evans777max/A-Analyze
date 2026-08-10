@@ -227,7 +227,7 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
     <!-- L2 全球情绪 -->
     <article class="panel">
       <div class="panel-head">
-        <div><h2>全球情绪 <small style="color:#98a2b3;font-size:11px">L2 · 权重15%</small></h2><p class="sub">隔夜美股与亚太时段风险情绪</p></div>
+        <div><h2>全球情绪 <small id="l2WeightLabel" style="color:#98a2b3;font-size:11px">L2 · 权重--%</small></h2><p class="sub">隔夜美股与亚太时段风险情绪</p></div>
         <span class="lscore" id="l2score">--</span>
       </div>
       <div id="l2rows"></div>
@@ -321,7 +321,7 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
 
   <footer>
     状态评分为公开行情驱动的规则化模型输出，衡量当下状态强度而非收益预测（2026 年样本内审计：评分与次日收益无稳定相关；部分风险警示在当前样本内显示有效性，仍需样本外持续验证）· 档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · App v4.1.1 · Model v4.0 · Schema v2
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · App v4.1.2 · Model v4.0 · Schema v2
   </footer>
 </main>
 
@@ -1180,6 +1180,8 @@ function render() {
     l3: layerScore(F.l3), l4: layerScore(F.l4)
   };
   const weights = { l1: 20, l2: l2Weight(), l3: 25, l4: 40 };
+  // v4.1.2：L2 权重时变（10:00 前 15 / 后 8），标题标签随当次实际参与计算的权重同步，不再硬编码
+  $("l2WeightLabel").textContent = "L2 · 权重" + weights.l2 + "%";
   let wAvail = 0, sSum = 0;
   for (const k of Object.keys(weights)) {
     if (Number.isFinite(L[k])) { wAvail += weights[k]; sSum += L[k] * weights[k]; }

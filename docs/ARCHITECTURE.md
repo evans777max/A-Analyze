@@ -1,6 +1,6 @@
 # A-Analyze · Architecture
 
-> App v4.1.1 · 单文件前端 + GitHub Actions 数据管线 + 可复跑审计的个人研究系统
+> App v4.1.2 · 单文件前端 + GitHub Actions 数据管线 + 可复跑审计的个人研究系统
 
 ## 总览
 

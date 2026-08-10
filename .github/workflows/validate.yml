@@ -33,6 +33,8 @@ jobs:
           TZ=UTC node scripts/test-timezone.mjs
           TZ=America/New_York node scripts/test-timezone.mjs
           TZ=Asia/Shanghai node scripts/test-timezone.mjs
+      - name: L2 weight label regression (label bound to actual weight)
+        run: node scripts/test-l2label.mjs
       - name: whitespace check
         env:
           EVENT: ${{ github.event_name }}
