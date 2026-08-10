@@ -51,6 +51,15 @@ const meta = JSON.parse(read("data/model-meta.json"));
     : bad("page l2Weight rule", `anchor=${anchor} chinaClock=${cnClock} noLocalTz=${noLocalTz}`);
 }
 
+/* 4c. L2 标签动态绑定（v4.1.2）：静态占位无数字硬编码 + 绑定语句引用实际 weights.l2（行为级验证见 scripts/test-l2label.mjs） */
+{
+  const mL = idx.match(/<small id="l2WeightLabel"[^>]*>([^<]*)<\/small>/);
+  const staticOk = mL && !/权重\s*\d/.test(mL[1]); // "L2"自身含数字，只禁"权重"后跟具体数值的硬编码
+  const bindOk = /\$\("l2WeightLabel"\)\.textContent = "L2 · 权重" \+ weights\.l2 \+ "%"/.test(idx);
+  (staticOk && bindOk) ? ok("L2 weight label bound to actual weights.l2 (no hardcode)")
+    : bad("L2 weight label binding", `staticPlaceholder=${staticOk} binding=${bindOk}`);
+}
+
 /* 4b. 公开版本一致性（v4.1.1）：页脚版本三元组 / README 徽章与表格 / ARCHITECTURE 均须与 model-meta 一致 */
 {
   const triad = `App v${meta.appVersion} · Model v${meta.currentModelVersion} · Schema v${meta.historySchemaVersion}`;
