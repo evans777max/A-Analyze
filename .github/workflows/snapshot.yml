@@ -8,6 +8,11 @@ on:
 permissions:
   contents: write
 
+# v4.1：workflow 级并发保护——双 cron 或手动触发重叠时排队而非并行，避免 push 竞争
+concurrency:
+  group: daily-score-snapshot
+  cancel-in-progress: false
+
 jobs:
   snapshot:
     runs-on: ubuntu-latest
@@ -19,6 +24,11 @@ jobs:
           node-version: 20
       - name: compute daily scores
         run: node scripts/snapshot.mjs
+      # v4.1：写入后、提交前验证——JSON/schema/口径一致性/隐私模式；validate-repo 任一 FAIL 即中止提交
+      - name: validate before commit
+        run: |
+          node scripts/validate-repo.mjs
+          git diff --check
       - name: commit history
         run: |
           git config user.name "github-actions[bot]"

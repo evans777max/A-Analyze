@@ -1114,7 +1114,9 @@ function renderHist() {
   }
   svg.innerHTML = html;
   const hasBf = pts.some(r => r.bf);
-  $("histNote").textContent = `近${pts.length}个交易日评分轨迹 ${pts[0].d.slice(5)}→${last.d.slice(5)}，最新 ${last.s.toFixed(0)} 分（虚线=55分持有线${hasBf ? " · 浅虚线段=回填重算" : ""} · ${S.sharedHist ? "云端快照+本机实时" : "本机记录"}）`;
+  // v4.1：模型口径切换提示——轨迹同时含 v3.x（早于 v4 纪元）与 v4.0 记录时，提示两段不完全可比
+  const spansEpoch = pts[0].d < MODEL_V4_EPOCH_START && last.d >= MODEL_V4_EPOCH_START;
+  $("histNote").textContent = `近${pts.length}个交易日评分轨迹 ${pts[0].d.slice(5)}→${last.d.slice(5)}，最新 ${last.s.toFixed(0)} 分（虚线=55分持有线${hasBf ? " · 浅虚线段=回填重算" : ""} · ${S.sharedHist ? "云端快照+本机实时" : "本机记录"}${spansEpoch ? " · ⚠ 08-10起为v4.0口径，与更早v3.x段不完全可比" : ""}）`;
 }
 
 /* ================= 渲染 ================= */
@@ -1365,7 +1367,8 @@ function render() {
     }
   }
   if (pen.p > 0) {
-    attrHtml += `<tr><td class="n">软规则</td><td class="n">相对强弱惩罚（跑输基准超1.5pct）</td><td class="r down">${signed(pen.rs, "pct")}</td><td class="r">—</td><td class="r">—</td><td class="r down">-${pen.p.toFixed(1)}</td></tr>`;
+    // v4.1：rsPen 已退出总分（v4.0 决策），归因表改为提示型展示——保留相对基准读数，贡献分明确为 0.0，不再表现为扣分
+    attrHtml += `<tr><td class="n">提示</td><td class="n">相对弱势/背离提示（不扣分）</td><td class="r down">${signed(pen.rs, "pct")}</td><td class="r">—</td><td class="r">—</td><td class="r">0.0</td></tr>`;
   }
   if (oh.p > 0) {
     attrHtml += `<tr><td class="n">软规则</td><td class="n">过热惩罚（2日/5日累计涨幅超限）</td><td class="r down">2日${oh.r2 !== null ? oh.r2.toFixed(0) : "--"}% / 5日${oh.r5 !== null ? oh.r5.toFixed(0) : "--"}%</td><td class="r">—</td><td class="r">—</td><td class="r down">-${oh.p.toFixed(1)}</td></tr>`;
@@ -1379,6 +1382,10 @@ function render() {
 }
 
 function compute() { try { render(); } catch (e) { $("stamp").textContent = "渲染异常：" + e.message; } }
+
+/* 模型版本标识（与 scripts/snapshot.mjs、data/model-meta.json 一致，validate-repo.mjs 校验） */
+const MODEL_VERSION = "4.0";
+const MODEL_V4_EPOCH_START = "2026-08-10"; // v4.0 首个实录快照日；更早记录为 v3.x 口径
 
 /* ================= 主题切换（浅色/深色，本机记忆，默认跟随系统） ================= */
 const THEME_KEY = "aa_theme_v1";

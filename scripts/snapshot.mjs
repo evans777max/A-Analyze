@@ -1,10 +1,13 @@
 // 每日收盘评分快照（GitHub Actions 定时执行，北京时间约15:20；双cron冗余）
 // 产出 data/history.json：全端一致的评分历史，页面直接读取
-// ⚠️ 本脚本复刻 index.html 的评分模型——页面改模型时必须同步本文件（见 .kiro/memory/项目记忆.md）
-// v4.0（2026-08-08，证据见 .kiro/memory/A股规律观察.md「模型体检」「跨市场传导审计」）：
+// ⚠️ 本脚本复刻 index.html 的评分模型——页面改模型时必须同步本文件（同步规则见 docs/ARCHITECTURE.md，口径由 scripts/validate-repo.mjs 锚点校验）
+// v4.0（2026-08-08，模型依据与已知限制见 docs/MODEL_CARD.md）：
 //   ① rsPen 退役不再扣分（全年审计判负）② L2 收盘态权重 15→8（隔夜美股只定开盘不定全天）
 //   ③ 快照扩字段：h/l/to（高/低/换手）+ l1-l4 分层分 + op（过热扣分），供后续实录审计与周报直用
 import fs from "node:fs";
+
+const MODEL_VERSION = "4.0";      // 与 index.html / data/model-meta.json 保持一致（validate-repo.mjs 校验）
+const HISTORY_SCHEMA_VERSION = 2; // 记录结构版本
 
 const html = fs.readFileSync("index.html", "utf8");
 const HOME = "bj920021";
@@ -165,6 +168,7 @@ function run(Q, K) {
     }
     return layerScore(rows);
   };
+  // rsPen：v4.0 起退出总分，仅保留为诊断口径（与页面"背离提示"、audit.mjs 诊断输出一致）；未在下方 score 中使用
   const rsPen = sym => {
     const q = Q[sym], bq = Q[benchFor(sym)];
     if (!q || !bq) return 0;
@@ -200,6 +204,8 @@ function run(Q, K) {
     if (Number.isFinite(q.turnover)) rec.to = +q.turnover.toFixed(2);
     for (const k of ["l1", "l2", "l3", "l4"]) if (Number.isFinite(L[k])) rec[k] = +L[k].toFixed(1);
     if (op > 0) rec.op = +op.toFixed(1);
+    rec.mv = MODEL_VERSION;          // v4.1：记录级模型版本标记
+    rec.sv = HISTORY_SCHEMA_VERSION; // v4.1：记录级 schema 版本标记
     out[sym] = rec;
   }
   return out;

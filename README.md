@@ -1,14 +1,25 @@
 # A-Analyze
 
-![Live](https://img.shields.io/badge/Live-edgeone.cool-46d39a?style=flat-square)
-![Version](https://img.shields.io/badge/version-v4.0-102a43?style=flat-square)
-![Single File](https://img.shields.io/badge/single--file-index.html-blue?style=flat-square)
-![Zero Deps](https://img.shields.io/badge/dependencies-0-success?style=flat-square)
+![Live](https://img.shields.io/badge/Live-GitHub%20Pages-46d39a?style=flat-square)
+![App](https://img.shields.io/badge/app-v4.1-102a43?style=flat-square)
+![Model](https://img.shields.io/badge/model-v4.0-175cd3?style=flat-square)
+![Schema](https://img.shields.io/badge/history%20schema-2-8b5cf6?style=flat-square)
+![Single File](https://img.shields.io/badge/single--file%20frontend-index.html-blue?style=flat-square)
+![Zero Runtime Deps](https://img.shields.io/badge/runtime%20dependencies-0-success?style=flat-square)
 ![Vanilla JS](https://img.shields.io/badge/vanilla-JS%2FCSS-f7df1e?style=flat-square)
 ![Market](https://img.shields.io/badge/market-A%E8%82%A1%20%C2%B7%20%E5%8C%97%E4%BA%A4%E6%89%80-d92d20?style=flat-square)
-![Deploy](https://img.shields.io/badge/deploy-EdgeOne%20Pages-102a43?style=flat-square)
 
-单文件、零依赖的 A 股多因子实时分析页。当前标的：流金科技（920021 · 北交所）。
+**证据驱动的 A 股主题池状态分析与持续验证系统**：单文件前端（single-file frontend）+ 零运行时依赖（zero runtime dependencies）的实时看盘页，配 GitHub Actions 每日评分快照、可复跑的模型审计与周度复盘。当前主标的：流金科技（920021 · 北交所）。
+
+**版本口径**（三者独立演进，详见 [docs/MODEL_CARD.md](docs/MODEL_CARD.md) 与 [data/model-meta.json](data/model-meta.json)）：
+
+| | 当前 | 含义 |
+|---|---|---|
+| App Version | **v4.1** | 页面与工程能力版本 |
+| Model Version | **v4.0** | 评分模型口径（权重/罚分/警示规则） |
+| History Schema Version | **2** | history.json 记录结构版本 |
+
+📚 文档：[Architecture](docs/ARCHITECTURE.md) · [Model Card](docs/MODEL_CARD.md) · [Roadmap](docs/ROADMAP.md) · [Weekly Reviews](#周度复盘记录)
 
 **Web（GitHub Pages，主入口）**: https://evans777max.github.io/A-Analyze/ ——repo 已公开（2026-08-10），主页面、周报 HTML 全部浏览器直开，云端评分历史完整可用。
 
@@ -30,13 +41,15 @@
 
 ¹ v4.0：L2 时变权重——交易日 10:00 前满权 15%（开盘定位窗口），此后降至 8%（跨市场审计：隔夜美股与 A 股开盘跳空相关 0.5+，与开盘后日内走势相关约 0——隔夜信息在跳空中一次性兑现）。
 
-**评分语义（v4.0 校准）**：评分衡量"当下状态强度"，不是收益预测——全年 IC 审计（3738 样本）显示评分与次日收益无稳定相关，但三个风险警示信号全部显著有效。评分映射四档参考档位：进攻 60–80% / 积极持有 40–60% / 观望 20–40% / 防守 0–20%。
+**评分语义（v4.0 校准）**：评分衡量"当下状态强度"，不是收益预测——样本内 IC 审计（2026 年 1-8 月，约 3738 观测）显示评分与次日收益无稳定相关；三个风险警示信号在**样本内审计中显著**，正在等待样本外实录继续验证。评分映射四档参考档位：进攻 60–80% / 积极持有 40–60% / 观望 20–40% / 防守 0–20%。
 两条硬规则优先于分数：跌破趋势防线强制防守档；北证50 单日大跌禁止进攻档。
 评分调整与警示（触发时在判定文字中透明展示）：
-- 过热惩罚（v3.2，全年审计强验证）：近 2 日累计涨幅超 1.5 倍单日涨跌幅上限、或近 5 日超 2 倍上限，递进扣分封顶 20 分——审计中被罚样本次日均值 -2.7%、3 日 -7.8%（同期全池 +0.4%），是全模型最强的反向信号；
-- 状态透支警示（v4.0 新增）：评分高出自身 60 日常态 +1σ 时提示——审计中此类样本次日均值 -0.4% vs 常态区 +0.14%；
-- 退潮高分警示（v4.0 新增）：主线状态=退潮且评分≥55 时提示——下跌主线中高分组次日显著跑输（IC -0.12、日胜率 33%），强势读作兑现风险；
-- 背离警示（v2.7 引入为扣分项，v4.0 退役为纯提示）：日内跑输基准超 1.5pct 时提示"环境强个股弱"——全年审计显示扣分方向打反（被罚组 3 日收益反而更高），故不再进评分。
+- 过热惩罚（v3.2，**样本内审计显著**）：近 2 日累计涨幅超 1.5 倍单日涨跌幅上限、或近 5 日超 2 倍上限，递进扣分封顶 20 分——样本内被罚样本（n=29）次日均值 -2.7%、3 日 -7.8%（同期全池 +0.4%）；
+- 状态透支警示（v4.0 新增，**阶段性证据支持**）：评分高出自身 60 日常态 +1σ 时提示——样本内此类样本次日均值 -0.4% vs 常态区 +0.14%；
+- 退潮高分警示（v4.0 新增，**阶段性证据支持**）：主线状态=退潮且评分≥55 时提示——样本内下跌主线中高分组次日 IC -0.12、日胜率 33%；
+- 背离警示（v2.7 引入为扣分项，v4.0 退役为纯提示）：日内跑输基准超 1.5pct 时提示"环境强个股弱"——样本内审计显示该扣分方向打反（被罚组 3 日收益反而更高），故不再进评分。
+
+> ⚠️ **解读上述统计前必读（已知偏差）**：股票池为 2026-08 人工选定的 AI 主题票（幸存者/选择偏差）；主标的关联池 corr90 为 8 月筛选基线（对更早历史存在前视）；fwd3/fwd5 收益窗口相互重叠（独立样本量小于名义观测数，显著性被高估）；全部结论未计交易成本，**不能直接解释为可交易 Alpha**。目前所有审计均为样本内，2026-08-10 起的实录快照构成首批样本外数据。完整偏差清单见 [docs/MODEL_CARD.md](docs/MODEL_CARD.md)。
 
 关键价格带默认自动推导（60日高 / 20日前高 / MA10-20 / 20日低 + ATR 去重），
 可在 `index.html` 顶部 `CONFIG.MANUAL_LEVELS` 手工覆盖。
@@ -83,7 +96,7 @@ v3.0 其他增强：
 
 ## v4.0 · 证据驱动的模型校准（2026-08-08）
 
-三份审计（`scripts/audit.mjs` 分层 IC 体检 60日/全年两轮、`scripts/xmarket.mjs` 跨市场传导）驱动的一轮系统校准，全部改动以统计证据为依据（详见 `.kiro/memory/A股规律观察.md` 的「模型体检」与「跨市场传导审计」）：
+三份审计（`scripts/audit.mjs` 分层 IC 体检 60日/全年两轮、`scripts/xmarket.mjs` 跨市场传导）驱动的一轮系统校准，全部改动以**样本内统计证据**为依据（模型结构、已知偏差与审计口径详见 [docs/MODEL_CARD.md](docs/MODEL_CARD.md)）：
 
 - **评分语义校准**：评分卡与页脚明确"状态强度、非收益预测"；"建议仓位"改"参考档位"
 - **rsPen 退役**：相对强弱惩罚不再扣分（审计判负：方向打反），保留为背离提示
@@ -98,13 +111,15 @@ v3.0 其他增强：
 
 历史起点（v3.8）：`scripts/backfill.mjs` 用同口径模型一次性回填了约 60 个交易日的收盘评分（记录带 `bf:1` 标记，轨迹图上以浅色虚线区分"回填重算"与"实录快照"；回填的 L2 仅含纳指 T-1 与恒生科技，其余因子完整）。此后由快照管线逐日实录接续。
 
-GitHub Actions 每个交易日北京时间 15:20 自动运行 `scripts/snapshot.mjs`：拉取全池收盘数据 → 按与页面完全同口径的模型计算每只票的收盘评分 → 追加写入 `data/history.json` 并提交。页面读取该文件作为评分历史基底（全端一致、不依赖用户开着页面），本机盘中实时点作为最新一天的补充。历史保留 250 个交易日。
+GitHub Actions 每个交易日自动运行 `scripts/snapshot.mjs`（北京时间 15:20 主 cron + 17:20 兜底 cron，workflow 级并发保护，同日幂等覆盖）：拉取全池收盘数据 → 按与页面同口径的模型计算每只票的收盘评分 → **通过 `scripts/validate-repo.mjs` 校验后**写入 `data/history.json` 并提交。页面读取该文件作为评分历史基底（全端一致、不依赖用户开着页面），本机盘中实时点作为最新一天的补充。历史保留 250 个交易日；v4.1 起新记录携带 `mv`（模型版本）与 `sv`（schema 版本）字段。
 
-⚠️ 维护约定：`scripts/snapshot.mjs` 复刻了页面的评分模型，改 `index.html` 模型时必须同步修改该脚本（标的池与 corr90 基线已自动从 index.html 提取，无需双份维护）。
+⚠️ 维护约定：`scripts/snapshot.mjs` 复刻了页面的评分模型，改 `index.html` 模型时必须同步修改该脚本（标的池与 corr90 基线已自动从 index.html 提取）。口径一致性由 `scripts/validate-repo.mjs` 的锚点检查守护，push/PR 时经 `validate` workflow 自动执行。
 
 ## 部署
 
-EdgeOne Pages Git 集成：推送到 `main` 分支即自动部署。改动 `index.html` → commit → push，约 1-2 分钟后线上生效。
+- **GitHub Pages（主入口）**：推送到 `main` 即自动发布，约 1 分钟生效。
+- EdgeOne Pages（备用，Git 集成保留）：默认域名对内地 IP 受限中，待绑定自定义域名后恢复。
+- 本地：下载 `index.html` 双击即用（零运行时依赖，file:// 下云端评分历史自动降级为本机记录）。
 
 ## 周度复盘记录
 
@@ -117,6 +132,10 @@ EdgeOne Pages Git 集成：推送到 `main` 分支即自动部署。改动 `inde
 | 2026-08-03 ~ 08-07 | [2026-08-07.md](weekly/2026-08-07.md) | [html](https://evans777max.github.io/A-Analyze/weekly/2026-08-07.html) | V 型反转周（周一普跌→周五普涨），R2 过热惩罚与 R3 假摔判别双双获收盘后验；汉鑫 97 分事件、众诚中报抢跑→T+1 兑现待定案 |
 | 同周 · 流金版 | [2026-08-07-liujin.md](weekly/2026-08-07-liujin.md) · [一页纸PDF](weekly/2026-08-07-liujin.pdf) | [html](https://evans777max.github.io/A-Analyze/weekly/2026-08-07-liujin.html) | 简版（无模型分析）：全球+A股 12 指数、周均分 Top5、周五尾盘结构性分化（卖光模块/买国产链）、盘外全球核心讯息 |
 
+## License
+
+当前仓库未授予明确的开源许可证：公开可见不等于自动授权复制、修改或再分发。License 选择待定（候选方案见维护者决策）。
+
 ## 免责声明
 
-综合评分为公开行情驱动的规则化模型输出，非投资顾问服务；仓位档位仅为该标的计划资金内的参考区间，不构成投资建议。行情数据可能存在延迟。投资有风险，决策需独立判断。
+评分为公开行情驱动的规则化模型输出，衡量状态强度而非收益预测，非投资顾问服务；参考档位仅为该标的计划资金内的参考区间，不构成投资建议。行情数据可能存在延迟。投资有风险，决策需独立判断。

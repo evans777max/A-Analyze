@@ -1,0 +1,50 @@
+name: validate
+# v4.1：push/PR 静态校验——只做语法与仓库自检，不抓行情、不写数据
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # whitespace 检查需要完整历史来对比事件范围
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: syntax check all scripts
+        run: |
+          for f in scripts/*.mjs; do node --check "$f"; done
+      - name: repository validation
+        run: node scripts/validate-repo.mjs
+      - name: whitespace check
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          # 干净 checkout 下 `git diff --check`（工作区 vs index）恒为空，
+          # 必须显式检查事件对应的提交范围
+          ZERO=0000000000000000000000000000000000000000
+          if [ "$EVENT" = "pull_request" ]; then
+            echo "PR: checking $BASE_SHA..$AFTER"
+            git diff --check "$BASE_SHA" "$AFTER"
+          elif [ "$BEFORE" = "$ZERO" ] || [ -z "$BEFORE" ]; then
+            echo "new branch first push: checking HEAD commit only"
+            git show --check "$AFTER" --
+          else
+            echo "push: checking $BEFORE..$AFTER"
+            git diff --check "$BEFORE" "$AFTER"
+          fi

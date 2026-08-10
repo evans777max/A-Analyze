@@ -1,4 +1,6 @@
 // 模型体检（IC 审计）v2.1 —— 全年口径（已同步 v4.0 模型：rsPen 不入总分、L2 收盘态权重 8；rsPen 仍单独报告作诊断）
+const MODEL_VERSION = "4.0"; // 审计口径对应的模型版本（validate-repo.mjs 校验三处一致）
+// 版本边界识别：history.json 记录若带 mv 字段即为该模型版本实录；无 mv 且带 bf:1 = 3.x 回填；无 mv 无 bf = 3.x 实录
 // 用与页面/快照同口径的模型按历史日重算分层评分，检验各层与未来收益的关系
 // v2 变化：K线拉 260 根（覆盖 2026 全年）、美股/恒科改在线拉取、新增 分月IC / 分行情(regime)IC / 自身历史分位测试
 // 运行：node scripts/audit.mjs  （本机，需可达 quotes.sina.cn / web.ifzq.gtimg.cn / query1.finance.yahoo.com）
