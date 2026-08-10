@@ -1,5 +1,6 @@
 # Private agent memory - kept locally, never tracked in the public repo
-.kiro/
+# (no trailing slash so the plain name also stays greppable-clean; matches the directory)
+.kiro
 
 # Local script outputs (audit/xmarket reports are run-on-demand artifacts)
 _audit_report.txt

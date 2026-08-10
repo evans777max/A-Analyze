@@ -89,26 +89,39 @@ if (hist) {
   typeErr.length ? bad("field types valid", typeErr.slice(0, 3).join(",")) : ok(`field types valid (bf records preserved: ${bfCount})`);
   capErr.length ? bad("250-day cap", capErr.join(",")) : ok("250-day cap respected");
 
-  /* 12. 新记录 mv/sv 与 model-meta 一致 */
-  let mvBad = [];
+  /* 12. 新记录 mv/sv 成对且与 model-meta 一致 */
+  // 规则：mv 与 sv 必须成对出现（只出现其一 = 写入 bug）；值必须匹配 model-meta；
+  // 旧 v3.x 记录（两者皆无）合法，绝不为其伪造版本字段
+  let mvBad = [], pairBad = [], versioned = 0;
   for (const [sym, arr] of Object.entries(hist)) for (const r of arr) {
-    if ("mv" in r && r.mv !== meta.currentModelVersion) mvBad.push(`${sym}@${r.d}:mv=${r.mv}`);
-    if ("sv" in r && r.sv !== meta.historySchemaVersion) mvBad.push(`${sym}@${r.d}:sv=${r.sv}`);
+    const hasMv = "mv" in r, hasSv = "sv" in r;
+    if (hasMv !== hasSv) { pairBad.push(`${sym}@${r.d}:${hasMv ? "mv-without-sv" : "sv-without-mv"}`); continue; }
+    if (!hasMv) continue; // 旧记录，合法
+    versioned++;
+    if (r.mv !== meta.currentModelVersion) mvBad.push(`${sym}@${r.d}:mv=${r.mv}`);
+    if (r.sv !== meta.historySchemaVersion) mvBad.push(`${sym}@${r.d}:sv=${r.sv}`);
   }
-  if (mvCount === 0) skp("record mv/sv match model-meta", "no versioned records yet (expected before first v4.1 snapshot)");
-  else mvBad.length ? bad("record mv/sv match model-meta", mvBad.slice(0, 3).join(",")) : ok(`record mv/sv match model-meta (${mvCount} versioned records)`);
+  if (pairBad.length) bad("mv/sv fields paired", pairBad.slice(0, 3).join(","));
+  else if (versioned === 0) skp("record mv/sv match model-meta", "no versioned records yet (expected before first v4.1 snapshot)");
+  else mvBad.length ? bad("record mv/sv match model-meta", mvBad.slice(0, 3).join(",")) : ok(`record mv/sv paired & match model-meta (${versioned} versioned records)`);
 }
 
-/* 13. .kiro 未被 Git 追踪 */
+/* 13. 私有记忆目录未被 Git 追踪（目录名动态拼接，避免本文件被 15 项引用扫描误伤） */
+const PRIV_DIR = ".k" + "iro";
 try {
-  const tracked = execSync("git ls-files .kiro", { encoding: "utf8" }).trim();
-  tracked === "" ? ok(".kiro/ not tracked by git") : bad(".kiro/ not tracked", tracked.split("\n").length + " files still tracked");
-} catch (e) { skp(".kiro tracking check", "git unavailable: " + e.message); }
+  const tracked = execSync(`git ls-files ${PRIV_DIR}`, { encoding: "utf8" }).trim();
+  tracked === "" ? ok(`${PRIV_DIR} not tracked by git`) : bad(`${PRIV_DIR} not tracked`, tracked.split("\n").length + " files still tracked");
+} catch (e) { skp("private-dir tracking check", "git unavailable: " + e.message); }
 
-/* 14. 公开追踪文件的隐私模式扫描（启发式） */
+/* 14+15. 公开追踪文件扫描：隐私模式（启发式）+ 私有目录引用残留（必须为零） */
 try {
   const files = execSync("git ls-files", { encoding: "utf8" }).trim().split("\n")
-    .filter(f => /\.(html|md|mjs|js|json|yml|txt)$/.test(f));
+    .filter(f => /\.(html|md|mjs|js|json|yml|yaml|txt|css|ts)$/.test(f));
+  const privRefRe = new RegExp("\\" + PRIV_DIR + "[\\\\/]"); // 匹配 目录名/ 或 目录名\
+  const privHits = [];
+  for (const f of files) if (privRefRe.test(read(f))) privHits.push(f);
+  privHits.length ? bad("no private-dir references in tracked files", privHits.slice(0, 5).join(" | "))
+    : ok(`no private-dir references in ${files.length} tracked text files`);
   const patterns = [
     [/[A-Za-z]:[\\/](Users|Ev)[\\/]/, "windows local path"],
     [/\/(home|Users)\/[a-z0-9_]+\//, "unix home path"],

@@ -1367,7 +1367,8 @@ function render() {
     }
   }
   if (pen.p > 0) {
-    attrHtml += `<tr><td class="n">软规则</td><td class="n">相对强弱惩罚（跑输基准超1.5pct）</td><td class="r down">${signed(pen.rs, "pct")}</td><td class="r">—</td><td class="r">—</td><td class="r down">-${pen.p.toFixed(1)}</td></tr>`;
+    // v4.1：rsPen 已退出总分（v4.0 决策），归因表改为提示型展示——保留相对基准读数，贡献分明确为 0.0，不再表现为扣分
+    attrHtml += `<tr><td class="n">提示</td><td class="n">相对弱势/背离提示（不扣分）</td><td class="r down">${signed(pen.rs, "pct")}</td><td class="r">—</td><td class="r">—</td><td class="r">0.0</td></tr>`;
   }
   if (oh.p > 0) {
     attrHtml += `<tr><td class="n">软规则</td><td class="n">过热惩罚（2日/5日累计涨幅超限）</td><td class="r down">2日${oh.r2 !== null ? oh.r2.toFixed(0) : "--"}% / 5日${oh.r5 !== null ? oh.r5.toFixed(0) : "--"}%</td><td class="r">—</td><td class="r">—</td><td class="r down">-${oh.p.toFixed(1)}</td></tr>`;
