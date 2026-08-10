@@ -1,0 +1,30 @@
+name: validate
+# v4.1：push/PR 静态校验——只做语法与仓库自检，不抓行情、不写数据
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: syntax check all scripts
+        run: |
+          for f in scripts/*.mjs; do node --check "$f"; done
+      - name: repository validation
+        run: node scripts/validate-repo.mjs
+      - name: whitespace check
+        run: git diff --check
