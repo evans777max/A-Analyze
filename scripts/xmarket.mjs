@@ -154,5 +154,5 @@ for(const [anchor,tags] of Object.entries(ANCHOR_MAP)){
   rpt+=`(对照 IXIC→池均: 全年=${mk(null)?.toFixed(3)} 1-5月=${mk(seg1)?.toFixed(3)} 6-8月=${mk(seg2)?.toFixed(3)})\n`;
 }
 
-fs.writeFileSync("C:/Ev/_xmkt_report.txt",rpt,"utf8");
+fs.writeFileSync("_xmarket_report.txt",rpt,"utf8");
 console.log(rpt);

@@ -1,0 +1,10 @@
+# Private agent memory - kept locally, never tracked in the public repo
+.kiro/
+
+# Local script outputs (audit/xmarket reports are run-on-demand artifacts)
+_audit_report.txt
+_xmarket_report.txt
+
+# OS noise
+Thumbs.db
+.DS_Store
