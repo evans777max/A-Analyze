@@ -1,5 +1,5 @@
 {
-  "appVersion": "4.1",
+  "appVersion": "4.1.1",
   "currentModelVersion": "4.0",
   "historySchemaVersion": 2,
   "scoreMeaning": "state_strength_not_return_forecast",

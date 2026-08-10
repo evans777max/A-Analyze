@@ -320,8 +320,8 @@ footer{padding:20px 2px;color:var(--faint);font-size:11px;text-align:center;line
   </section>
 
   <footer>
-    状态评分为公开行情驱动的规则化模型输出，衡量当下状态强度而非收益预测（全年 IC 审计：评分与次日收益无稳定相关，风险警示信号显著有效）· 档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
-    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · v3.9
+    状态评分为公开行情驱动的规则化模型输出，衡量当下状态强度而非收益预测（2026 年样本内审计：评分与次日收益无稳定相关；部分风险警示在当前样本内显示有效性，仍需样本外持续验证）· 档位仅为该标的计划资金内的参考区间，不构成投资建议<br>
+    A-Analyze · 数据源：腾讯行情 / 新浪K线 / 东方财富（日韩） · 行情可能存在延迟 · 投资有风险，决策需独立判断 · App v4.1.1 · Model v4.0 · Schema v2
   </footer>
 </main>
 
@@ -909,10 +909,15 @@ function overheatPenalty(sym) {
 // v4.0 L2 时变权重（跨市场审计：隔夜美股→A股开盘跳空 corr≈0.5 全年稳定，→日内走势 corr≈0——
 // 隔夜信息在开盘跳空中一次性兑现，开盘后 L2 对当日方向的解释力急剧衰减）
 // 交易日 10:00 前（盘前+开盘定位窗口）满权重 15；10:00 后（含收盘后）降至 8
-function l2Weight() {
-  const n = new Date();
-  const wd = n.getDay(), hm = n.getHours() * 60 + n.getMinutes();
-  return (wd >= 1 && wd <= 5 && hm < 600) ? 15 : 8;
+// v4.1.1 修复：模型定义的"交易日 10:00"固定指北京时间（Asia/Shanghai，固定 UTC+8 无 DST）。
+// 原实现用访问者本地时区，导致同一 UTC 时刻在不同地区打开页面评分不一致。
+function chinaMarketClock(now = new Date()) {
+  const cn = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  return { wd: cn.getUTCDay(), hm: cn.getUTCHours() * 60 + cn.getUTCMinutes() };
+}
+function l2Weight(now = new Date()) {
+  const { wd, hm } = chinaMarketClock(now);
+  return wd >= 1 && wd <= 5 && hm < 600 ? 15 : 8;
 }
 
 // v4.0 状态透支检测（全年审计：评分高出自身60日常态 +1σ 的样本 n=539，次日均值 -0.40%，

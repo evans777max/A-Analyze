@@ -28,6 +28,11 @@ jobs:
           for f in scripts/*.mjs; do node --check "$f"; done
       - name: repository validation
         run: node scripts/validate-repo.mjs
+      - name: timezone regression (page logic, 3 timezones must agree)
+        run: |
+          TZ=UTC node scripts/test-timezone.mjs
+          TZ=America/New_York node scripts/test-timezone.mjs
+          TZ=Asia/Shanghai node scripts/test-timezone.mjs
       - name: whitespace check
         env:
           EVENT: ${{ github.event_name }}

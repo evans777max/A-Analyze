@@ -1,7 +1,7 @@
 # A-Analyze
 
 ![Live](https://img.shields.io/badge/Live-GitHub%20Pages-46d39a?style=flat-square)
-![App](https://img.shields.io/badge/app-v4.1-102a43?style=flat-square)
+![App](https://img.shields.io/badge/app-v4.1.1-102a43?style=flat-square)
 ![Model](https://img.shields.io/badge/model-v4.0-175cd3?style=flat-square)
 ![Schema](https://img.shields.io/badge/history%20schema-2-8b5cf6?style=flat-square)
 ![Single File](https://img.shields.io/badge/single--file%20frontend-index.html-blue?style=flat-square)
@@ -15,7 +15,7 @@
 
 | | 当前 | 含义 |
 |---|---|---|
-| App Version | **v4.1** | 页面与工程能力版本 |
+| App Version | **v4.1.1** | 页面与工程能力版本 |
 | Model Version | **v4.0** | 评分模型口径（权重/罚分/警示规则） |
 | History Schema Version | **2** | history.json 记录结构版本 |
 
