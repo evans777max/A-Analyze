@@ -10,9 +10,12 @@
 
 单文件、零依赖的 A 股多因子实时分析页。当前标的：流金科技（920021 · 北交所）。
 
-**Live**: https://liujin-live-2.edgeone.cool/ （内地访问受限中，见"周度复盘记录"处说明）
+**Web（GitHub Pages，主入口）**: https://evans777max.github.io/A-Analyze/ ——repo 已公开（2026-08-10），主页面、周报 HTML 全部浏览器直开，云端评分历史完整可用。
 
-**Git 版主页面（内地可用，推荐）**：打开 [index.html](index.html) → 文件页右上角 **⋯ 菜单 → Download**（把这一个文件存到电脑）→ 双击用浏览器打开，即完整主页面。已实测：实时行情 / 分时线 / 状态评分 / 全部 20 只自选表功能完整——数据由浏览器直连公开行情源，和线上版完全同源；唯一差别是"云端评分历史"轨迹退化为本机累积（本地打开读不到 data/history.json，页面自动降级）。更新：重新下载一次即可拿到最新版本。
+备用入口：
+- **raw.githack**: https://raw.githack.com/evans777max/A-Analyze/main/index.html （Pages 打不开时试这个）
+- **下载单文件**：打开 [index.html](index.html) → ⋯ 菜单 → Download → 双击本地打开（已实测全功能，仅云端评分历史降级为本机累积）
+- ~~EdgeOne~~: https://liujin-live-2.edgeone.cool/ （默认域名内地访问受限，待自定义域名后恢复）
 
 ## 它做什么
 
@@ -107,12 +110,12 @@ EdgeOne Pages Git 集成：推送到 `main` 分支即自动部署。改动 `inde
 
 每周五收盘后生成当周复盘（`weekly/` 目录），作为持续学习与模型优化的留档依据：市场周表现、核心标的逐日复盘 + 评分轨迹、全池周表现、模型验证与教训、模型迭代记录、下周关注点。**每期两种格式**：MD（GitHub 直接渲染，内地随时可看，首选）+ HTML（完整排版，走线上域名）。
 
-> ⚠️ **线上 HTML 链接内地访问受限（2026-08-07 起）**：EdgeOne Pages 默认域名（*.edgeone.cool）对中国内地 IP 已启用合规限制，新部署内容返回 401；老页面靠边缘缓存暂时可开，缓存过期后同样失效。根治方案 = 绑定自定义域名（待办）。在此之前请看 MD 版。
+> 注：EdgeOne 默认域名对内地 IP 受限后（2026-08-07），repo 已于 08-10 转公开并启用 GitHub Pages 作为网页版主入口；HTML 链接均指向 Pages。
 
 | 周 | Git 版（内地可看） | 线上 HTML | 一句话摘要 |
 |---|---|---|---|
-| 2026-08-03 ~ 08-07 | [2026-08-07.md](weekly/2026-08-07.md) | [html](https://liujin-live-2.edgeone.cool/weekly/2026-08-07.html) | V 型反转周（周一普跌→周五普涨），R2 过热惩罚与 R3 假摔判别双双获收盘后验；汉鑫 97 分事件、众诚中报抢跑→T+1 兑现待定案 |
-| 同周 · 流金版 | [2026-08-07-liujin.md](weekly/2026-08-07-liujin.md) · [一页纸PDF](weekly/2026-08-07-liujin.pdf) | [html](https://liujin-live-2.edgeone.cool/weekly/2026-08-07-liujin.html) | 简版（无模型分析）：全球+A股 12 指数、周均分 Top5、周五尾盘结构性分化（卖光模块/买国产链）、盘外全球核心讯息 |
+| 2026-08-03 ~ 08-07 | [2026-08-07.md](weekly/2026-08-07.md) | [html](https://evans777max.github.io/A-Analyze/weekly/2026-08-07.html) | V 型反转周（周一普跌→周五普涨），R2 过热惩罚与 R3 假摔判别双双获收盘后验；汉鑫 97 分事件、众诚中报抢跑→T+1 兑现待定案 |
+| 同周 · 流金版 | [2026-08-07-liujin.md](weekly/2026-08-07-liujin.md) · [一页纸PDF](weekly/2026-08-07-liujin.pdf) | [html](https://evans777max.github.io/A-Analyze/weekly/2026-08-07-liujin.html) | 简版（无模型分析）：全球+A股 12 指数、周均分 Top5、周五尾盘结构性分化（卖光模块/买国产链）、盘外全球核心讯息 |
 
 ## 免责声明
 
