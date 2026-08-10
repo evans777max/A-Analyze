@@ -6,6 +6,9 @@
 //   ③ 快照扩字段：h/l/to（高/低/换手）+ l1-l4 分层分 + op（过热扣分），供后续实录审计与周报直用
 import fs from "node:fs";
 
+const MODEL_VERSION = "4.0";      // 与 index.html / data/model-meta.json 保持一致（validate-repo.mjs 校验）
+const HISTORY_SCHEMA_VERSION = 2; // 记录结构版本
+
 const html = fs.readFileSync("index.html", "utf8");
 const HOME = "bj920021";
 const IDX_CANDS = ["sh000001", "sz399001", "sz399006", "sh000688", "sz399971", "bj899050"];
@@ -200,6 +203,8 @@ function run(Q, K) {
     if (Number.isFinite(q.turnover)) rec.to = +q.turnover.toFixed(2);
     for (const k of ["l1", "l2", "l3", "l4"]) if (Number.isFinite(L[k])) rec[k] = +L[k].toFixed(1);
     if (op > 0) rec.op = +op.toFixed(1);
+    rec.mv = MODEL_VERSION;          // v4.1：记录级模型版本标记
+    rec.sv = HISTORY_SCHEMA_VERSION; // v4.1：记录级 schema 版本标记
     out[sym] = rec;
   }
   return out;
