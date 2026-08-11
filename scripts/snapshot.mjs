@@ -4,6 +4,10 @@
 // v4.0（2026-08-08，模型依据与已知限制见 docs/MODEL_CARD.md）：
 //   ① rsPen 退役不再扣分（全年审计判负）② L2 收盘态权重 15→8（隔夜美股只定开盘不定全天）
 //   ③ 快照扩字段：h/l/to（高/低/换手）+ l1-l4 分层分 + op（过热扣分），供后续实录审计与周报直用
+// v4.1.3（2026-08-11）：修正 L2 漂移——本脚本此前缺日经225/KOSPI 两项，与 index.html 及
+//   MODEL_CARD 声明口径（隔夜美股 + 恒生科技 + 日经/KOSPI）不一致，导致 history.json 的 l2
+//   与页面读数在亚太与美股方向相反时显著背离（2026-08-11 上午实测：页面 51.2 vs 快照 37.1，
+//   层内差 14.1 分 → 总分差 1.2 分）。口径由 validate-repo.mjs 新增的 L2 行项锚点校验。
 import fs from "node:fs";
 
 const MODEL_VERSION = "4.0";      // 与 index.html / data/model-meta.json 保持一致（validate-repo.mjs 校验）
@@ -43,6 +47,21 @@ async function fetchQuotes(syms) {
     };
   }
   return q;
+}
+
+// 日经/KOSPI（东财 ulist，与 index.html fetchGlobal 同源同口径）
+// 缺失时 L2 自动按剩余项重加权，不阻断快照
+async function fetchGlobal() {
+  try {
+    const url = "https://push2.eastmoney.com/api/qt/ulist.np/get?secids=100.N225,100.KS11&fields=f2,f3,f12,f14&fltt=2";
+    const r = await fetch(url, { ...UA, signal: AbortSignal.timeout(10000) });
+    const j = await r.json();
+    const g = {};
+    for (const d of (j?.data?.diff || [])) {
+      if (Number.isFinite(d.f3)) g[d.f12 === "N225" ? "N225" : "KS11"] = { price: d.f2, pct: d.f3 };
+    }
+    return g;
+  } catch (e) { return {}; }
 }
 
 async function fetchK(sym) {
@@ -89,7 +108,7 @@ const layerScore = rows => {
   return v.reduce((s, r) => s + r.score * r.w, 0) / w;
 };
 
-function run(Q, K) {
+function run(Q, K, G) {
   const l1For = sym => {
     const B = benchFor(sym), bz = Q[B], sh = Q["sh000001"], cyb = Q["sz399006"];
     const spreadRef = B === "sh000001" ? Q["sz399001"] : sh;
@@ -101,10 +120,13 @@ function run(Q, K) {
     if (bz && spreadRef) rows.push({ score: lin(bz.pct - spreadRef.pct, -1.5, 1.5), w: 20 });
     return layerScore(rows);
   };
+  // v4.1.3：补齐日经/KOSPI（此前缺失导致快照 L2 与页面/MODEL_CARD 声明口径不一致）
   const l2 = layerScore([
     Q["usIXIC"] && { score: lin(Q["usIXIC"].pct, -2, 2), w: 30 },
     Q["usINX"] && { score: lin(Q["usINX"].pct, -1.5, 1.5), w: 20 },
-    Q["hkHSTECH"] && { score: lin(Q["hkHSTECH"].pct, -2.5, 2.5), w: 25 }
+    Q["hkHSTECH"] && { score: lin(Q["hkHSTECH"].pct, -2.5, 2.5), w: 25 },
+    G && G.N225 && { score: lin(G.N225.pct, -2, 2), w: 12.5 },
+    G && G.KS11 && { score: lin(G.KS11.pct, -2, 2), w: 12.5 }
   ].filter(Boolean));
 
   const linkedTop = sym => {
@@ -214,6 +236,8 @@ function run(Q, K) {
 /* ---------- 主流程 ---------- */
 const Q = await fetchQuotes([...new Set([...ALL_K, ...QUOTE_EXTRA])]);
 console.log("quotes:", Object.keys(Q).length);
+const G = await fetchGlobal();
+console.log("global:", Object.keys(G).join(",") || "none (L2 按剩余项重加权)");
 const K = {};
 for (let i = 0; i < ALL_K.length; i += 5) {
   await Promise.all(ALL_K.slice(i, i + 5).map(async sym => { const b = await fetchK(sym); if (b) K[sym] = b; }));
@@ -222,7 +246,7 @@ for (let i = 0; i < ALL_K.length; i += 5) {
 console.log("klines:", Object.keys(K).length);
 if (!Q[HOME] || !K[HOME]) { console.error("FATAL: 主标的数据缺失，退出不提交"); process.exit(1); }
 
-const snap = run(Q, K);
+const snap = run(Q, K, G);
 console.log("scored:", Object.keys(snap).length);
 
 const FILE = "data/history.json";

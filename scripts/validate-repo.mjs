@@ -51,6 +51,22 @@ const meta = JSON.parse(read("data/model-meta.json"));
     : bad("page l2Weight rule", `anchor=${anchor} chinaClock=${cnClock} noLocalTz=${noLocalTz}`);
 }
 
+/* 4d. L2 行项口径一致（v4.1.3）：页面与快照必须同为 5 个锚（美股2 + 恒生科技 + 日经 + KOSPI）
+   缘由：此前 snapshot.mjs 缺日经/KOSPI，权重锚点全绿却仍产生层内 14 分的漂移——
+   权重对不代表输入项对，故单独钉住行项权重。审计脚本用日频历史，仅美股+恒科可得，豁免。 */
+{
+  const l2Anchors = [[/lin\((?:Q\["usIXIC"\]\.pct|ixic\.pct|us), ?-2, ?2\), ?w: ?30/, "nasdaq w30"],
+    [/lin\((?:Q\["usINX"\]\.pct|inx\.pct), ?-1\.5, ?1\.5\), ?w: ?20/, "sp500 w20"],
+    [/lin\((?:Q\["hkHSTECH"\]\.pct|hstech\.pct|hk), ?-2\.5, ?2\.5\), ?w: ?25/, "hstech w25"],
+    [/N225\.pct, ?-2, ?2\), ?w: ?12\.5/, "n225 w12.5"],
+    [/KS11\.pct, ?-2, ?2\), ?w: ?12\.5/, "kospi w12.5"]];
+  const missIdx = l2Anchors.filter(([re]) => !re.test(idx)).map(([, n]) => n);
+  const missSnap = l2Anchors.filter(([re]) => !re.test(snap)).map(([, n]) => n);
+  (!missIdx.length && !missSnap.length)
+    ? ok("L2 row anchors identical in page & snapshot (us×2 + hstech + n225 + kospi)")
+    : bad("L2 row parity page vs snapshot", `page missing=[${missIdx}] snapshot missing=[${missSnap}]`);
+}
+
 /* 4c. L2 标签动态绑定（v4.1.2）：静态占位无数字硬编码 + 绑定语句引用实际 weights.l2（行为级验证见 scripts/test-l2label.mjs） */
 {
   const mL = idx.match(/<small id="l2WeightLabel"[^>]*>([^<]*)<\/small>/);
