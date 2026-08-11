@@ -19,7 +19,7 @@
 | Model Version | **v4.0** | 评分模型口径（权重/罚分/警示规则） |
 | History Schema Version | **2** | history.json 记录结构版本 |
 
-📚 文档：[Architecture](docs/ARCHITECTURE.md) · [Model Card](docs/MODEL_CARD.md) · [Roadmap](docs/ROADMAP.md) · [Weekly Reviews](#周度复盘记录)
+📚 文档：[Architecture](docs/ARCHITECTURE.md) · [Model Card](docs/MODEL_CARD.md) · [Roadmap](docs/ROADMAP.md) · [Weekly Reviews](#周度复盘记录) · [项目记忆](memory/项目记忆.md) · [规律观察日志](memory/A股规律观察.md)
 
 **Web（GitHub Pages，主入口）**: https://evans777max.github.io/A-Analyze/ ——repo 已公开（2026-08-10），主页面、周报 HTML 全部浏览器直开，云端评分历史完整可用。
 
