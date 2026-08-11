@@ -136,6 +136,7 @@ GitHub Actions 每个交易日自动运行 `scripts/snapshot.mjs`（北京时间
 
 | 日期 | 文件 | 摘要 |
 |---|---|---|
+| 2026-08-11 | [md](notes/2026-08-11-liujin-tuiyan.md) · [网页版](https://evans777max.github.io/A-Analyze/notes/2026-08-11-liujin-tuiyan.html) | **七测告破**：收 7.25（-1.76%）缩量阴破 7.35，昨日情景 B 兑现；内外比全天恶化至 1.55；三情景重构（延续~45%/箱体~35%/收复~20%）+ 量比因子取反导致 L4 虚高的口径拆解 + 中报披露日 8-21 核查结项 |
 | 2026-08-10 | [PDF](notes/2026-08-10-liujin-tuiyan.pdf) · [网页版](https://evans777max.github.io/A-Analyze/notes/2026-08-10-liujin-tuiyan.html) | 流金收盘贴 7.35 防线（六测六收回）：三情景推演（磨底~50%/终破~30%/修复~20%）+ 退潮期高分=兑现风险的审计警示 |
 
 ## License
