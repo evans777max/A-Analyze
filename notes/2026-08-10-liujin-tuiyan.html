@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>流金科技 · 盘后推演 2026-08-10</title>
+<style>
+@page{size:A4;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#101828;--ink2:#475467;--muted:#667085;--faint:#98a2b3;
+  --line:#e4e7ec;--line2:#f2f4f7;--wash:#f5f7fa;
+  --navy:#102a43;--red:#d92d20;--green:#039855;--amber:#b54708;
+  --t-blue-ink:#175cd3;--t-blue-bg:#eff8ff;--t-red-ink:#b42318;--t-red-bg:#fef3f2;
+  --t-green-ink:#027a48;--t-green-bg:#ecfdf3;--t-amber-ink:#b54708;--t-amber-bg:#fffaeb;
+  --mono:Consolas,ui-monospace,Menlo,monospace
+}
+body{width:210mm;min-height:296mm;margin:0 auto;font:10px/1.55 "Microsoft YaHei","PingFang SC",sans-serif;color:var(--ink);background:#fff;padding:0 0 4mm}
+.up{color:var(--red)}.down{color:var(--green)}
+.topbar{background:var(--navy);color:#fff;padding:4.5mm 8mm;display:flex;justify-content:space-between;align-items:center}
+.topbar .brand{font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:#46d39a;display:inline-block}
+.topbar .range{font-size:10.5px;color:#d0d9e4}
+.wrap{padding:3.6mm 8mm 0}
+.hero{display:flex;align-items:flex-end;gap:14px;border-bottom:2px solid var(--navy);padding-bottom:2.6mm}
+.hero .eyebrow{font-size:8.5px;color:var(--muted);letter-spacing:.1em;font-weight:700}
+.hero h1{font-size:16px;margin-top:2px}
+.hero .price{font:700 24px/1 var(--mono)}
+.hero .chg{font:700 12px var(--mono);padding-bottom:2px}
+.hero p{flex:1;font-size:9px;color:var(--ink2);line-height:1.5}
+section{margin-top:2.8mm}
+h2{font-size:11px;border-left:3px solid var(--navy);padding-left:6px;margin-bottom:1.4mm}
+h2 small{font-weight:400;color:var(--muted);font-size:8.5px;margin-left:5px}
+.facts{display:flex;gap:4mm}
+.facts>div{flex:1;border:1px solid var(--line);padding:1.8mm 2.4mm}
+.facts .k{font-size:8.5px;color:var(--muted)}
+.facts .v{font:700 13px var(--mono);margin-top:1px}
+.facts .s{font-size:8.5px;color:var(--ink2);margin-top:1px}
+.warn{margin-top:2mm;padding:1.8mm 2.5mm;background:var(--t-red-bg);border-left:3px solid var(--t-red-ink);font-size:9.2px;line-height:1.55}
+.warn b{color:var(--t-red-ink)}
+.band{position:relative;height:16mm;margin:2mm 0 1mm}
+.band .track{position:absolute;top:7mm;left:2%;right:2%;height:2.4mm;background:linear-gradient(90deg,#ecfdf3,#f2f4f7 45%,#fef3f2)}
+.band .tick{position:absolute;top:4mm;width:1px;height:8.4mm;background:var(--faint)}
+.band .tick.cur{background:var(--navy);width:2px}
+.band .lb{position:absolute;font:700 8.5px var(--mono);transform:translateX(-50%);white-space:nowrap}
+.band .lb.top{top:0.5mm}
+.band .lb.bot{top:13mm;font-weight:400;color:var(--muted);font-family:"Microsoft YaHei","PingFang SC",sans-serif}
+.sc{display:flex;gap:3.5mm}
+.sc>div{flex:1;border:1px solid var(--line);padding:2mm 2.4mm}
+.sc .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:1mm}
+.sc .hd b{font-size:10px}
+.sc .pr{font:700 9px var(--mono);padding:1px 5px}
+.sc .a .pr{background:var(--t-blue-bg);color:var(--t-blue-ink)}
+.sc .b .pr{background:var(--t-red-bg);color:var(--t-red-ink)}
+.sc .c .pr{background:var(--t-green-bg);color:var(--t-green-ink)}
+.sc p{font-size:8.8px;color:var(--ink2);line-height:1.5}
+.sc .tg{font-size:8.5px;margin-top:1.2mm;color:var(--ink)}
+.sc .tg b{color:var(--muted);font-weight:600}
+ol{padding-left:16px}
+ol li{font-size:9.2px;line-height:1.55;margin:0.8mm 0}
+.todo{margin-top:2mm;padding:1.6mm 2.5mm;background:var(--t-amber-bg);border-left:3px solid var(--t-amber-ink);font-size:9px;line-height:1.5}
+footer{margin-top:2.8mm;padding:1.8mm 8mm 0;border-top:1px solid var(--line);font-size:8px;color:var(--faint);display:flex;justify-content:space-between}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><i class="dot"></i>A-Analyze · 流金科技 盘后推演</div>
+  <div class="range">2026-08-10（周一）收盘后 · 场景推演 · 非投资建议</div>
+</div>
+<div class="wrap">
+
+  <div class="hero" style="margin-top:1mm">
+    <div>
+      <div class="eyebrow">920021 · 北交所 · 传媒/AI应用</div>
+      <h1>流金科技</h1>
+    </div>
+    <div class="price down">7.38</div>
+    <div class="chg down">-2.12% · 距 7.35 防线仅 0.4%</div>
+    <p>收盘价四连降（7.65→7.58→7.54→7.38），收在六次测试防线以来最贴线的位置。当日盘中低点 7.30 第六次击穿 7.35 后拉回——六测六收回，但每次收回的高度在降低，买盘在被消耗。</p>
+  </div>
+
+  <section>
+    <h2>当前坐标<small>数据 = 当日收盘评分快照（v4.0 实录，含分层）</small></h2>
+    <div class="facts">
+      <div><div class="k">综合评分（全池第 1）</div><div class="v">61.8</div><div class="s">评分轨迹与价格同步阴跌中</div></div>
+      <div><div class="k">L4 个股动能（全池最高）</div><div class="v up">75.7</div><div class="s">均线体系上方，自身结构未坏</div></div>
+      <div><div class="k">L1 境内环境</div><div class="v down">33.4</div><div class="s">北证50 -1.00% 全场最弱</div></div>
+      <div><div class="k">L3 联动 / 内外盘</div><div class="v">58.1</div><div class="s">主动卖占优（内外比 1.30）</div></div>
+    </div>
+    <div class="warn"><b>模型警示（证据驱动，反直觉）</b>：当日主线状态为「退潮」（境内环境弱 + 池内普跌）。全年样本内审计显示：<b>退潮期的高分组次日显著跑输</b>（IC -0.12 · 日胜率 33%）。流金恰是当日全池最高分——按证据，此刻的"最高分"应读作<b>兑现风险偏高</b>，而非安全垫。个股结构强（L4）与环境压制（L1）正在对抗。</div>
+  </section>
+
+  <section>
+    <h2>价位地图</h2>
+    <div class="band">
+      <div class="track"></div>
+      <div class="tick" style="left:8%"></div><div class="lb top" style="left:8%">7.12</div><div class="lb bot" style="left:8%">8/3 低点·月内起点</div>
+      <div class="tick" style="left:22%"></div><div class="lb top" style="left:22%">7.24</div><div class="lb bot" style="left:22%">8/7 恐慌低点</div>
+      <div class="tick" style="left:36%"></div><div class="lb top" style="left:36%">7.35</div><div class="lb bot" style="left:36%">六测防线</div>
+      <div class="tick cur" style="left:45%"></div><div class="lb top" style="left:45%;color:var(--navy)">▼ 现价 7.38</div>
+      <div class="tick" style="left:62%"></div><div class="lb top" style="left:62%">7.54-7.58</div><div class="lb bot" style="left:62%">上周收盘平台·反弹首考</div>
+      <div class="tick" style="left:80%"></div><div class="lb top" style="left:80%">7.65</div><div class="lb bot" style="left:80%">双顶收盘</div>
+      <div class="tick" style="left:94%"></div><div class="lb top" style="left:94%">7.99</div><div class="lb bot" style="left:94%">脉冲高点</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>三情景推演<small>概率为定性判断 · 样本有限，触发条件比结论更重要</small></h2>
+    <div class="sc">
+      <div class="a"><div class="hd"><b>A · 贴线磨底</b><span class="pr">基准 ~50%</span></div>
+        <p>北证止跌企稳、无新利空，7.30-7.55 缩量震荡。"共识位强化论"延续的路径，但磨的时间越长、第七测越近——防线在变薄。</p>
+        <div class="tg"><b>特征：</b>缩量 + 贴线不破 + 内外比回落</div></div>
+      <div class="b"><div class="hd"><b>B · 第七测终破</b><span class="pr">风险 ~30%</span></div>
+        <p>触发任一：北证续弱 / 众诚继续补跌拖累北交AI情绪 / 隔夜美股大跌或 CPI 前避险。贴线久磨终破，止损盘或放大跌幅：第一目标 7.24，情绪差看 7.12。</p>
+        <div class="tg"><b>判读：</b>放量急杀快收回=假摔可能；缩量阴破=真走弱勿接</div></div>
+      <div class="c"><div class="hd"><b>C · 反弹修复</b><span class="pr">需外援 ~20%</span></div>
+        <p>隔夜美股稳 + 周三美国 CPI 低于预期 → 风偏修复北证补涨。L4=75.7 说明弹起的内在结构还在。第一目标 7.54-7.58 平台，站回才谈 7.65。</p>
+        <div class="tg"><b>确认：</b>放量站回 7.54 上方</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>明日观察哨<small>按时间顺序</small></h2>
+    <ol>
+      <li><b>开盘跳空方向</b>——跨市场审计结论：隔夜美股只决定这一跳（相关 0.5+），之后 A 股走自己的（日内相关约 0）。今晚美股直接决定三情景的初始权重。</li>
+      <li><b>7.35 第七测的量价</b>——放量下探快速收回 = 防线仍有效；缩量阴跌贴破 = 离场信号。同价不同命，看量。</li>
+      <li><b>众诚科技企稳与否</b>——同板块情绪锚（其"中报脉冲→T+1兑现→T+2补跌"周期刚闭环，收 23.57）。它不止跌，流金难独善。</li>
+      <li><b>内外盘比</b>——当日 1.30 主动卖占优；修复的前提是回到 1 以下。</li>
+    </ol>
+  </section>
+
+  <div class="todo"><b>待核查</b>：中报季密集期临近，需查流金科技的中报预约披露日——若临近，同板块刚验证的「披露日脉冲抢跑 → 次日高开兑现」三日模式存在重演可能，届时披露前的盘中异动为最优先观察信号。</div>
+
+</div>
+<footer>
+  <span>依据：当日收盘快照（分层评分）· 六次防线测试记录 · 全年样本内审计（约3700观测，含已知偏差）</span>
+  <span>生成于 2026-08-10 盘后 · 场景推演非预测，不构成投资建议</span>
+</footer>
+</body>
+</html>

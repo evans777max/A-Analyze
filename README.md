@@ -132,6 +132,12 @@ GitHub Actions 每个交易日自动运行 `scripts/snapshot.mjs`（北京时间
 | 2026-08-03 ~ 08-07 | [2026-08-07.md](weekly/2026-08-07.md) | [html](https://evans777max.github.io/A-Analyze/weekly/2026-08-07.html) | V 型反转周（周一普跌→周五普涨），R2 过热惩罚与 R3 假摔判别双双获收盘后验；汉鑫 97 分事件、众诚中报抢跑→T+1 兑现待定案 |
 | 同周 · 流金版 | [2026-08-07-liujin.md](weekly/2026-08-07-liujin.md) · [一页纸PDF](weekly/2026-08-07-liujin.pdf) | [html](https://evans777max.github.io/A-Analyze/weekly/2026-08-07-liujin.html) | 简版（无模型分析）：全球+A股 12 指数、周均分 Top5、周五尾盘结构性分化（卖光模块/买国产链）、盘外全球核心讯息 |
 
+### 盘后推演（notes/ · 不定期）
+
+| 日期 | 文件 | 摘要 |
+|---|---|---|
+| 2026-08-10 | [PDF](notes/2026-08-10-liujin-tuiyan.pdf) · [网页版](https://evans777max.github.io/A-Analyze/notes/2026-08-10-liujin-tuiyan.html) | 流金收盘贴 7.35 防线（六测六收回）：三情景推演（磨底~50%/终破~30%/修复~20%）+ 退潮期高分=兑现风险的审计警示 |
+
 ## License
 
 当前仓库未授予明确的开源许可证：公开可见不等于自动授权复制、修改或再分发。License 选择待定（候选方案见维护者决策）。
