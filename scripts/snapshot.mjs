@@ -50,18 +50,31 @@ async function fetchQuotes(syms) {
 }
 
 // 日经/KOSPI（东财 ulist，与 index.html fetchGlobal 同源同口径）
-// 缺失时 L2 自动按剩余项重加权，不阻断快照
+// v4.1.4（2026-08-12）：加重试——该端点间歇性返回 302/502（08-11 两次快照均取到，
+//   08-12 那次 global: none 落库 l2=34.6 而实际应为 47.4，差 12.8 分）。单次请求不足以判定"数据缺失"，
+//   故 3 次重试 + 退避；仍失败时打印 WARN 明确区分"取数失败"与"确实无数据"，
+//   L2 才按剩余项重加权（不阻断快照，但落库前会在日志留痕便于事后甄别）。
+//   注：新浪 int_nikkei 与本源口径不一致（同日 44946 vs 67524），不可作为备源直接替换。
 async function fetchGlobal() {
-  try {
-    const url = "https://push2.eastmoney.com/api/qt/ulist.np/get?secids=100.N225,100.KS11&fields=f2,f3,f12,f14&fltt=2";
-    const r = await fetch(url, { ...UA, signal: AbortSignal.timeout(10000) });
-    const j = await r.json();
-    const g = {};
-    for (const d of (j?.data?.diff || [])) {
-      if (Number.isFinite(d.f3)) g[d.f12 === "N225" ? "N225" : "KS11"] = { price: d.f2, pct: d.f3 };
+  const url = "https://push2.eastmoney.com/api/qt/ulist.np/get?secids=100.N225,100.KS11&fields=f2,f3,f12,f14&fltt=2";
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const r = await fetch(url, { ...UA, signal: AbortSignal.timeout(10000) });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const j = await r.json();
+      const g = {};
+      for (const d of (j?.data?.diff || [])) {
+        if (Number.isFinite(d.f3)) g[d.f12 === "N225" ? "N225" : "KS11"] = { price: d.f2, pct: d.f3 };
+      }
+      if (Object.keys(g).length) return g;
+      throw new Error("empty diff");
+    } catch (e) {
+      console.log(`  fetchGlobal attempt ${attempt}/3 failed: ${e.message}`);
+      if (attempt < 3) await sleep(attempt * 1500);
     }
-    return g;
-  } catch (e) { return {}; }
+  }
+  console.log("  WARN: 日经/KOSPI 取数失败，L2 将按剩余3项重加权——该记录的 l2 与五项口径不可比");
+  return {};
 }
 
 async function fetchK(sym) {
