@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A-Analyze · 周度复盘 2026-08-10 ~ 08-14</title>
+<style>
+
+:root{--bg:#f7f8fa;--fg:#1a2433;--mut:#7a8699;--card:#fff;--line:#e4e8ee;--acc:#2563eb;--up:#d92d20;--dn:#079455;--soft:#eef2f7}
+@media (prefers-color-scheme: dark){:root{--bg:#09090b;--fg:#e6e9ef;--mut:#8b93a3;--card:#131318;--line:#26262e;--acc:#38bdf8;--up:#f97066;--dn:#47cd89;--soft:#1b1b22}}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.75 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif;padding:28px 16px 60px}
+.wrap{max-width:880px;margin:0 auto}
+header h1{font-size:22px;letter-spacing:.5px}
+header .mut{font-size:13px}
+.mut{color:var(--mut)}
+.up{color:var(--up)}.dn{color:var(--dn)}.flat{color:var(--mut)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:18px 0 6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.card .k{font-size:12px;color:var(--mut)}
+.card .v{font-size:20px;font-weight:700}
+.card .sub{font-size:12px;color:var(--mut)}
+section{margin-top:34px}
+h2{font-size:17px;border-left:3px solid var(--acc);padding-left:9px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:13.5px}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+thead th{background:var(--soft);color:var(--mut);font-weight:600;font-size:12px}
+tbody tr:last-child td{border-bottom:none}
+.stock{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+.stock-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.stock-head b{font-size:16px}
+.wk{font-weight:700;margin-left:6px}
+.mini{font-size:13px}
+.note{font-size:13.5px;color:var(--fg);opacity:.9;margin-top:10px}
+.bf{font-size:10px;color:var(--mut);border:1px solid var(--line);border-radius:4px;padding:0 3px;margin-left:4px;vertical-align:1px}
+ul,ol{padding-left:20px}
+li{margin:7px 0}
+.lesson{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:8px;padding:10px 14px;margin:10px 0;font-size:14px}
+.lesson b{color:var(--acc)}
+footer{margin-top:44px;font-size:12px;color:var(--mut);border-top:1px solid var(--line);padding-top:14px}
+@media (max-width:620px){body{padding:18px 8px 40px}th,td{padding:6px 6px}}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>A-Analyze · 周度复盘</h1>
+  <div class="mut">2026-08-10（周一）~ 2026-08-14（周五） · 5 个交易日 · 第 2 期周报 · 用于持续学习与模型优化留档</div>
+</header>
+
+<div class="cards">
+<div class="card"><div class="k">北证50</div><div class="v dn">-4.12%</div><div class="sub">收 1087.52</div></div><div class="card"><div class="k">上证指数</div><div class="v dn">-0.33%</div><div class="sub">收 3927.18</div></div><div class="card"><div class="k">创业板指</div><div class="v up">+1.77%</div><div class="sub">收 3626.30</div></div><div class="card"><div class="k">科创50</div><div class="v dn">-1.51%</div><div class="sub">收 1717.68</div></div><div class="card"><div class="k">自选池宽度（周）</div><div class="v">11/26</div><div class="sub">周涨跌为正的标的数</div></div>
+</div>
+
+<p class="mut">与首期（08-03~08-07，北证50 +4.71%、池内 23/26 上涨）几乎完全反向：<strong>北交所领跌、创业板独强、池内多数下跌</strong>。本周核心事件是流金科技减持公告与 7.35/7.65 两个关键位的双向失守。</p>
+
+<hr>
+
+<h2>① 指数周表现</h2>
+
+<table><thead><tr><th>指数</th><th>08/10 一</th><th>08/11 二</th><th>08/12 三</th><th>08/13 四</th><th>08/14 五</th><th>周涨跌</th></tr></thead><tbody>
+<tr><td><strong>北证50</strong></td><td class="dn">−1.00%</td><td class="dn">−0.86%</td><td class="up">+0.23%</td><td class="dn">−1.62%</td><td class="dn">−0.94%</td><td class="dn"><strong>−4.12%</strong></td></tr>
+<tr><td>上证指数</td><td class="up">+0.67%</td><td class="dn">−0.82%</td><td class="up">+0.32%</td><td class="dn">−0.50%</td><td class="up">+0.01%</td><td class="dn"><strong>−0.33%</strong></td></tr>
+<tr><td>深证成指</td><td class="up">+0.04%</td><td class="dn">−0.40%</td><td class="up">+1.09%</td><td class="dn">−0.87%</td><td class="up">+0.45%</td><td class="up"><strong>+0.30%</strong></td></tr>
+<tr><td><strong>创业板指</strong></td><td class="dn">−0.73%</td><td class="up">+0.34%</td><td class="up">+1.49%</td><td class="dn">−0.45%</td><td class="up">+1.12%</td><td class="up"><strong>+1.77%</strong></td></tr>
+<tr><td>科创50</td><td class="dn">−0.36%</td><td class="dn">−1.63%</td><td class="up">+1.61%</td><td class="dn">−1.11%</td><td class="flat">−0.00%</td><td class="dn"><strong>−1.51%</strong></td></tr>
+<tr><td>中证传媒</td><td class="up">+1.16%</td><td class="dn">−1.25%</td><td class="up">+1.10%</td><td class="dn">−1.85%</td><td class="up">+0.04%</td><td class="dn"><strong>−0.84%</strong></td></tr>
+</tbody></table>
+周涨跌以 08-07 收盘为基准。<strong>节奏</strong>：周一二连跌 → 周三普涨（唯一全线红盘日）→ 周四五再度分化。<strong>北证50 五日仅一日上涨，是全周最弱指数</strong>；创业板是唯一周线收涨的主要指数。
+
+<p class="mut"><em>08-14 单日涨跌取自实时收盘（新浪日K当日尚未更新），其余取日K收盘价。</em></p>
+
+<h2>② 核心标的周复盘</h2>
+
+<h3>流金科技 bj920021 · 周 <strong>−9.02%</strong>（全池最差）</h3>
+
+<table><thead><tr><th>日</th><th>收盘</th><th>涨跌</th><th>评分</th><th>关键事件</th></tr></thead><tbody>
+<tr><td>08/10 一</td><td>7.38</td><td class="dn">−2.12%</td><td>57.1</td><td>第 6 次测试 7.35（低 7.30）收回</td></tr>
+<tr><td>08/11 二</td><td>7.25</td><td class="dn">−1.76%</td><td>47.5</td><td><strong>7.35 第 7 测告破</strong>（缩量阴破）</td></tr>
+<tr><td>08/12 三</td><td>7.43</td><td class="up">+2.48%</td><td>61.8</td><td>次日反包，冲 7.69 未站住（三顶）</td></tr>
+<tr><td>08/13 四</td><td>7.38</td><td class="dn">−0.67%</td><td>42.7</td><td class="up">冲 7.88 全吐，换手 10.32%</td></tr>
+<tr><td>08/14 五</td><td><strong>6.86</strong></td><td class="dn"><strong>−7.05%</strong></td><td>41.9</td><td><strong>减持公告首日，MA20 跌破</strong></td></tr>
+</tbody></table>
+主标的。本周走完"支撑失守 → 反包 → 压力位失败 → 利空定价"的完整链条：
+
+<ul><li><strong>7.35 支撑侧</strong>：08-11 第 7 次测试终破（收盘口径首次失守，"共识位强化论"终结），但 08-12 次日即收复 —— 原待验证项"终破后跌幅是否因积累止损盘放大"答案为<strong>未放大</strong></li><li><strong>7.65 压力侧</strong>：08-12（三顶）、08-13（四顶）两次放量冲击均未站住，累计 4 次失败</li><li><strong>08-13 盘后发布《股东拟减持股份的预披露公告》</strong>（编号 2026-051）：实控人王俭的两个一致行动人拟合计减持 ≤2%（618 万股 ≈ 流通盘 2.4%、约 0.44 亿元 ≈ 0.3 个日均成交量），<strong>窗口为披露后 30 个交易日起的 3 个月内，起点约 10 月上中旬</strong></li><li><strong>08-14 收 6.86（−7.05%）</strong>：MA20（6.883）跌破，<strong>均线结构由「中线未破」40 分降至「空头排列」10 分</strong>；换手 10.34%、内外比 1.40（全周单向恶化）</li><li>评分自 08-12 的 61.8 回落至 41.9，周均分 50.2、<strong>Δ评分 −15.2 为全池最大降幅</strong></li></ul>
+
+<h3>众诚科技 bj920207 · 周 −5.64%</h3>
+
+<table><thead><tr><th>日</th><th>收盘</th><th>涨跌</th><th>评分</th></tr></thead><tbody>
+<tr><td>08/10 一</td><td>23.57</td><td class="dn">−2.92%</td><td>44.5</td></tr>
+<tr><td>08/11 二</td><td>23.20</td><td class="dn">−1.57%</td><td>54.7</td></tr>
+<tr><td>08/12 三</td><td>23.19</td><td class="dn">−0.04%</td><td>60.9</td></tr>
+<tr><td>08/13 四</td><td>22.62</td><td class="dn">−2.46%</td><td>33.2</td></tr>
+<tr><td>08/14 五</td><td>22.91</td><td class="up"><strong>+1.28%</strong></td><td>59.3</td></tr>
+</tbody></table>
+上期 O1「中报脉冲抢跑 → T+1 拉高兑现 → T+2 补跌」三日周期于 08-10 收盘定案闭环。本周作为流金的<strong>同板块情绪锚</strong>：08-11~08-13 与流金同步走弱，<strong>08-14 在流金 −7.05% 的当天独立翻红 +1.28%（内外比 1.00）</strong> —— 这是"流金个股利空、非北交所板块问题"最直接的反证。
+
+<h3>拓维信息 sz002261 · 周 −2.76%</h3>
+
+<table><thead><tr><th>日</th><th>收盘</th><th>涨跌</th><th>评分</th></tr></thead><tbody>
+<tr><td>08/10 一</td><td>26.01</td><td class="dn">−4.34%</td><td>32.3</td></tr>
+<tr><td>08/11 二</td><td>26.32</td><td class="up">+1.19%</td><td>41.4</td></tr>
+<tr><td>08/12 三</td><td>26.27</td><td class="dn">−0.19%</td><td>48.7</td></tr>
+<tr><td>08/13 四</td><td>26.15</td><td class="dn">−0.46%</td><td>34.8</td></tr>
+<tr><td>08/14 五</td><td>26.44</td><td class="up"><strong>+1.11%</strong></td><td>60.4</td></tr>
+</tbody></table>
+华为链。全周窄幅震荡（26.01-26.44），振幅仅 1.7%，是三只观察标的中波动最小的。08-14 与众诚同步翻红，评分 60.4 为本周最高。Δ评分 +28.1。
+
+<h3>汉鑫科技 bj920092 · 周 −7.59%</h3>
+
+<table><thead><tr><th>日</th><th>收盘</th><th>涨跌</th><th>评分</th></tr></thead><tbody>
+<tr><td>08/10 一</td><td>30.60</td><td class="dn">−3.98%</td><td>51.2</td></tr>
+<tr><td>08/11 二</td><td>31.07</td><td class="up">+1.54%</td><td>45.5</td></tr>
+<tr><td>08/12 三</td><td>30.40</td><td class="dn">−2.16%</td><td>50.7</td></tr>
+<tr><td>08/13 四</td><td>30.67</td><td class="up">+0.89%</td><td>42.8</td></tr>
+<tr><td>08/14 五</td><td>29.45</td><td class="dn"><strong>−3.98%</strong></td><td>43.7</td></tr>
+</tbody></table>
+上期 R2 过热惩罚的样本票（07-31~08-05 两日 +60%）。本周继续回吐，<strong>周均分 46.8、Δ评分 −7.5</strong>。08-14 换手 13.68% 为全池最高，与流金同为当日跌幅前二 —— 北交AI 情绪在减持公告日被一并压制。
+
+<h2>③ 全池周表现（按周涨跌排序）</h2>
+
+<table><thead><tr><th>标的</th><th>08-14收盘</th><th>周涨跌</th><th>评分（一→五）</th><th>周均分</th><th>Δ评分</th></tr></thead><tbody>
+<tr><td>云赛智联 600602</td><td>20.56</td><td class="up"><strong>+14.67%</strong></td><td>39.1 → 53.9 → 64.3 → 45.4 → 83.5</td><td>57.2</td><td><strong>+44.4</strong></td></tr>
+<tr><td>数据港 603881</td><td>29.04</td><td class="up"><strong>+12.95%</strong></td><td>48.4 → 64.4 → 70.5 → 48.5 → 82.5</td><td><strong>62.9</strong></td><td>+34.1</td></tr>
+<tr><td>新易盛 300502</td><td>448.08</td><td class="up">+6.44%</td><td>28.8 → 38.1 → 60.5 → 42.1 → 63.8</td><td>46.7</td><td>+35.0</td></tr>
+<tr><td>中芯国际 688981</td><td>132.87</td><td class="up">+3.40%</td><td>35.3 → 32.4 → 56.3 → 49.1 → 58.3</td><td>46.3</td><td>+23.0</td></tr>
+<tr><td>中际旭创 300308</td><td>943.00</td><td class="up">+2.51%</td><td>28.7 → 36.8 → 56.3 → 37.0 → 55.6</td><td>42.9</td><td>+26.9</td></tr>
+<tr><td>润泽科技 300442</td><td>70.90</td><td class="up">+1.65%</td><td>42.7 → 48.0 → 54.8 → 54.9 → 76.5</td><td>55.4</td><td>+33.8</td></tr>
+<tr><td>浪潮信息 000977</td><td>78.80</td><td class="up">+1.04%</td><td>42.6 → 36.2 → 49.9 → 59.2 → 52.0</td><td>48.0</td><td>+9.4</td></tr>
+<tr><td>中科曙光 603019</td><td>89.36</td><td class="up">+0.66%</td><td>35.9 → 30.7 → 40.9 → 60.9 → 56.5</td><td>45.0</td><td>+20.6</td></tr>
+<tr><td>优刻得 688158</td><td>35.62</td><td class="up">+0.51%</td><td>44.5 → 50.5 → 56.4 → 47.1 → 73.0</td><td>54.3</td><td>+28.5</td></tr>
+<tr><td>数码视讯 300079</td><td>4.53</td><td class="up">+0.44%</td><td>48.4 → 53.3 → 60.2 → 43.6 → 55.3</td><td>52.2</td><td>+6.9</td></tr>
+<tr><td>华数传媒 000156</td><td>6.82</td><td class="up">+0.15%</td><td>49.0 → 41.9 → 49.0 → 40.8 → 49.7</td><td>46.1</td><td>+0.7</td></tr>
+<tr><td>澜起科技 688008</td><td>211.91</td><td class="dn">−1.68%</td><td>42.8 → 35.3 → 67.7 → 40.3 → 59.9</td><td>49.2</td><td>+17.1</td></tr>
+<tr><td>北方华创 002371</td><td>738.66</td><td class="dn">−1.77%</td><td>51.8 → 51.5 → 67.4 → 45.0 → 49.3</td><td>53.0</td><td>−2.5</td></tr>
+<tr><td>光环新网 300383</td><td>13.24</td><td class="dn">−2.58%</td><td>45.6 → 54.0 → 56.7 → 27.3 → 64.5</td><td>49.6</td><td>+18.9</td></tr>
+<tr><td>拓维信息 002261</td><td>26.44</td><td class="dn">−2.76%</td><td>32.3 → 41.4 → 48.7 → 34.8 → 60.4</td><td>43.5</td><td>+28.1</td></tr>
+<tr><td>昆仑万维 300418</td><td>43.62</td><td class="dn">−2.81%</td><td>50.9 → 47.3 → 50.2 → 37.3 → 62.3</td><td>49.6</td><td>+11.4</td></tr>
+<tr><td>工业富联 601138</td><td>66.19</td><td class="dn">−2.92%</td><td>56.2 → 49.7 → 65.5 → 47.7 → 56.9</td><td>55.2</td><td>+0.7</td></tr>
+<tr><td>中国卫通 601698</td><td>26.49</td><td class="dn">−3.39%</td><td>52.3 → 35.1 → 48.5 → 44.9 → 48.2</td><td>45.8</td><td>−4.1</td></tr>
+<tr><td>金山办公 688111</td><td>256.45</td><td class="dn">−3.46%</td><td>55.2 → 47.1 → 55.3 → 35.0 → 54.0</td><td>49.3</td><td>−1.2</td></tr>
+<tr><td>科大讯飞 002230</td><td>41.78</td><td class="dn">−4.02%</td><td>51.5 → 49.3 → 53.6 → 38.8 → 52.1</td><td>49.1</td><td>+0.6</td></tr>
+<tr><td>海光信息 688041</td><td>280.99</td><td class="dn">−4.99%</td><td>39.8 → 34.2 → 49.4 → 42.3 → 35.5</td><td>40.2</td><td>−4.3</td></tr>
+<tr><td>众诚科技 920207</td><td>22.91</td><td class="dn">−5.64%</td><td>44.5 → 54.7 → 60.9 → 33.2 → 59.3</td><td>50.5</td><td>+14.8</td></tr>
+<tr><td>软通动力 301236</td><td>39.02</td><td class="dn">−6.45%</td><td>53.0 → 66.1 → 53.1 → 42.5 → 58.2</td><td>54.6</td><td>+5.2</td></tr>
+<tr><td>汉鑫科技 920092</td><td>29.45</td><td class="dn">−7.59%</td><td>51.2 → 45.5 → 50.7 → 42.8 → 43.7</td><td>46.8</td><td>−7.5</td></tr>
+<tr><td>寒武纪 688256</td><td>1093.00</td><td class="dn">−8.91%</td><td>34.8 → 27.0 → 49.4 → 29.1 → 36.8</td><td><strong>35.4</strong></td><td>+2.0</td></tr>
+<tr><td><strong>流金科技 920021</strong></td><td><strong>6.86</strong></td><td class="dn"><strong>−9.02%</strong></td><td>57.1 → 47.5 → 61.8 → 42.7 → 41.9</td><td>50.2</td><td><strong>−15.2</strong></td></tr>
+</tbody></table>
+<strong>全池 11 涨 15 跌，周均涨 −0.91%</strong>（上期 23 涨 3 跌）。
+
+<ul><li><strong>周均分 Top5</strong>：数据港 62.9 · 云赛智联 57.2 · 润泽科技 55.4 · 工业富联 55.2 · 软通动力 54.6</li><li><strong>周均分 Bottom5</strong>：寒武纪 35.4 · 海光信息 40.2 · 中际旭创 42.9 · 拓维信息 43.5 · 中科曙光 45.0</li><li><strong>结构特征</strong>：IDC（数据港 +12.95%、润泽 +1.65%）与云计算（云赛智联 +14.67%）领涨，<strong>AI芯片链垫底</strong>（寒武纪 −8.91%、海光 −4.99%）。这与上期"卖光模块、买国产芯片链"（O7）<strong>方向相反</strong> —— 本周光模块（新易盛 +6.44%、中际旭创 +2.51%）反而收涨</li></ul>
+
+<p class="mut"><em>08-14 评分为收盘态实算（当日快照 cron 尚未跑），其余取 data/history.json 实录。</em></p>
+
+<h2>④ 本周关键事件</h2>
+
+<ul><li><strong>08/10 一</strong> 流金第 6 次测试 7.35 收回（六测六收回）；众诚 O1 三日周期定案闭环；O7 定性修正为「高位科技系统性减仓」（"买国产链"半边证伪：寒武纪 −6.33% 同跌）</li><li><strong>08/11 二</strong> <strong>流金 7.35 第 7 测告破</strong>（缩量阴破，收 7.25）；发现并修复 <code>snapshot.mjs</code> 的 L2 缺日经/KOSPI 漂移（commit <code>24af442</code>）</li><li><strong>08/12 三</strong> 全线唯一普涨日（创业板 +1.49%）；<strong>流金次日反包 +2.48%</strong> 收复 7.35，但冲 7.69 未站住（三顶）；美国 7 月 CPI 前一日</li><li><strong>08/13 四</strong> 美国 7 月 CPI 核心同比 2.5%（前值 2.6%）<strong>偏鸽</strong>，纳指 +0.54%；A 股全市场午后同步跳水（科创50 日高→收 −3.65%）；流金冲 7.88 全吐、换手 10.32%；<strong>盘后 19:03 发布减持预披露公告</strong></li><li><strong>08/14 五</strong> 流金 <strong>−7.05%</strong> 收 6.86，MA20 跌破；<strong>全池 16 涨 10 跌、均涨 +1.08% 而流金独跌</strong>（第 24/26）；数据港涨停 +10.00%、云赛智联 +6.20%；北证50 低点 1080.73 出现在 13:26 后回升</li></ul>
+
+<h2>⑤ 模型验证与教训（本周核心产出）</h2>
+
+<blockquote><strong>⚠ 最重要的一条 —— R3 升级为方法论硬约束：盘中不得做定性判断</strong><br>本周同一错误犯了 <strong>5 次</strong>：08-11 判"缩量阴破=真走弱"（次日被收复）· 08-12 判"三顶成立"（次日被突破）· 08-13 判"真突破"（收盘四道关口全破）· 08-13 判"拓维唯一转强"（收盘 −0.46%）· 08-13 判"资金从北交所往主板迁移"（收盘科创50 跌幅最深，实为全市场同跌）。<br>每次的盘中数据本身都没错，错的是用盘中形态推断"真突破/转强/成立/坐实"这类<strong>需要收盘乃至次日才能确认的性质</strong>。<br><strong>硬约束</strong>：盘中只描述事实与量价结构，不使用定性表述；定性留到收盘，反转性质留到次日；"资金流向"类结论需多日窗口。08-14 全天已按此执行。</blockquote>
+
+<blockquote><strong>O5 关键价位测试次数效应 · 支撑侧与压力侧双向定案</strong><br>支撑侧（7.35）：前 6 次盘中破收盘收回、第 7 次收盘破<strong>但次日仍收复</strong> —— 原待验证项"终破后跌幅是否放大"答案为<strong>未放大</strong>。压力侧（7.65）：08-12、08-13 两次放量冲击均未站住，累计 4 次失败。<br><strong>统一结论：关键位的价值在破位后的可逆性，而非永不破；单次突破/破位都不足以定性。</strong></blockquote>
+
+<blockquote><strong>R3 假摔警示的边界修正 —— "缩量阴破=真走弱"不成立</strong><br>08-11 流金缩量阴破（量比 0.55、破位段无放量），我据此判"真走弱"，08-12 即被放量收复。<strong>缩量是中性信息</strong>（说明"没人接"而非"很多人卖"），无人接的下跌同样可被次日少量买盘逆转（北交所流动性薄，双向都容易）。判别口径：破位当日量价形态判别力有限，<strong>分水岭是次日能否放量收回</strong>。另注 v3.9 警示在 08-11 未触发（L1=35.3），漏报侧待样本积累。</blockquote>
+
+<blockquote><strong>O2 北交所挖坑反转 · 补第 2 样本，时间节奏被证伪</strong><br>08-14 北证50 全天低点 1080.73 出现在 <strong>13:26（午后）</strong>，回升至收盘 1087.52。挖坑→回升形态成立（2/2），但节奏与 O2 原文差约 2 小时（"10:30-11:00 横盘"窗内仍在下行、"11:00 后 V 回"窗内也未回升）。<br><strong>修正：O2 只能用于"低点后存在回升倾向"的定性提示，不能用于择时；"11:00"这一具体时点应从规律描述中删除。</strong> 且两次样本均为指数层面，个股未必同步（08-14 流金独跌 −7.05% 而指数回升）。</blockquote>
+
+<blockquote><strong>跨市场审计"小涨夜高开是卖点" · 获样本外验证 1 例</strong><br>08-13 昨夜纳指 +0.54%（正落小涨夜区间 +0.5~1.5%），叠加鸽派 CPI 利好，三只观察标的仍全部"高开→日内下跌→收盘归零/翻绿"（众诚跳空 +1.60% 收 −2.46%、拓维跳空 +1.48% 收 −0.46%），指数同步收于日内最低附近。典型 sell the news。n=1 不构成统计确认，继续积累。</blockquote>
+
+<blockquote><strong>O1 提出镜像形态假设 —— 利空公告前的异常放量派发（待验证）</strong><br>08-13 流金冲高全吐、换手 <strong>10.32%</strong> 异常高、内外比恶化至 1.10、收盘低于 VWAP 2.74%，当晚 19:03 发布减持公告。我当日因公告未发而三次得出"无任何利空"的结论，归因为纯资金行为 —— <strong>该归因不完整</strong>。<br>提示可能存在 O1 的镜像形态：<strong>"异常换手率"应作为独立警示项</strong>，而非仅在有已知催化剂时才关注。<strong>但明确标注待验证</strong>：单一样本，知情交易无法从公开数据证实，且需收集反面样本（异常换手后无公告）以避免事后归因偏误。</blockquote>
+
+<blockquote><strong>R2 教训 · 本周两次踩中一次做对</strong><br>08-12 盘中报的折算量比 3.31x/2.30x/1.52x 与<strong>收盘实际 0.95x</strong> 严重不符 —— <code>tradedMinutes</code> 折算在早盘脉冲行情中会系统性高估全天量能（当日实测高估约 3.5 倍）。08-13 起改用未折算口径并标注，08-13 收盘量比 1.44x、08-14 为 1.42x，与盘中报数方向一致。<strong>结论：盘中量比必须标注"折算"并提示收盘可能大幅回落。</strong></blockquote>
+
+<h2>⑥ 本周工程迭代</h2>
+
+<ul><li><strong>08-11</strong> <code>fix: snapshot L2 缺日经/KOSPI 导致与页面口径漂移</code>（<code>24af442</code>）—— <code>snapshot.mjs</code> 的 L2 仅 3 项、缺日经/KOSPI，与 <code>index.html</code> 及 MODEL_CARD 声明的 5 项不一致；当日实测层内差 14.1 分。同时新增 <code>validate-repo.mjs</code> 检查 4d 钉住页面与快照的 L2 行项一致（已用注入回归验证会 FAIL）</li><li><strong>08-11</strong> <code>notes/2026-08-11-liujin-tuiyan</code>（<code>680ab97</code>）—— 七测告破盘后推演</li><li><strong>08-12</strong> <code>memory/会话日志.md</code> 建立（<code>c9d7fe2</code>）—— 人机协作逐轮记录，只记结论与决策</li><li><strong>08-12</strong> <code>fix: fetchGlobal 加重试</code>（<code>cbb1add</code>）—— 东财 ulist 间歇 302/502 导致 L2 静默降级落库（08-12 实测 l2 应 47.4 却写入 34.6）。改为 3 次重试 + 退避 + 失败 WARN，明确区分"取数失败"与"确实无数据"</li><li><strong>08-13</strong> 会话日志 cron 自动化 + <strong>时间自检</strong>（非 15:00-23:59 即跳过），08-14 首次成功拦截早盘误触发</li><li><strong>MODEL_CARD 新增已知偏差 #7</strong>：L4 量能因子在 <code>pct=0</code> 处硬跳变（实测层内 89.5 分、总分 6.2 分并跨一档）。修正会打断 v4.0 实录可比性，列入 ROADMAP 待 2026-09 样本外复检一并决策</li></ul>
+
+<h2>⑦ 下周关注</h2>
+
+<ul><li><strong>流金能否收复 MA20（≈6.88）</strong>：08-14 收 6.86 在其下方，均线结构现为「空头排列」10 分。收复则回「中线未破」40 分</li><li><strong>08/21 中报披露（周五）</strong>：流金中报预约披露日，是减持压制期内唯一的正向变量，且<strong>与减持窗口不重叠</strong>（窗口约 10 月上中旬才开启）。O1 的"披露日脉冲抢跑"观察哨建议自 08/19 当周启用</li><li><strong>减持公告的心理压制期</strong>：08-14 至约 10 月上中旬，观察反弹是否反复受"减持"叙事压制。注意减持主体当前<strong>在法律上尚不能卖出</strong></li><li><strong>个股利空 vs 大盘反弹的相对强度</strong>：08-14 全池均涨 +1.08%、宽度 65% 而流金 −9.02% 排第 24/26。此类"大盘涨/个股独跌"样本可用于量化个股利空的定价强度</li><li><strong>IDC/云计算 vs AI芯片链的轮动是否延续</strong>：本周云赛智联 +14.67%、数据港 +12.95% 领涨而寒武纪 −8.91% 垫底，与上期 O7 方向相反</li><li><strong>东财 ulist 端点稳定性</strong>：连续两日故障（08-13 三次重试全败，l2 降级为三项 59.9）。备源受限（新浪 int_nikkei 与东财读数差异巨大不可用），是否为缺项落库降级标记待决策</li><li><strong>O2/O5/R3 样本积累</strong>：O2 时间节奏 1/2 不符、R3 假摔 2 例真走弱 0 例、O5 仅流金 1 只标的 —— 均需更多样本，暂不固化</li></ul>
+
+<hr>
+
+<p class="mut"><em>数据源：腾讯 qt（实时/分时）· 新浪 kline（日K）· <code>data/history.json</code>（评分快照）· 东财公告与预约披露表 · BLS 官方 CPI 日历 · 周涨跌以 2026-08-07 收盘为基准 · 评分为规则化模型输出，衡量状态强度非收益预测，非投资建议</em></p>
+
+</div>
+</body>
+</html>
